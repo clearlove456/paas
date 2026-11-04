@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	v1 "github.com/clearlove456/paas/api/paas/v1"
 	"github.com/clearlove456/paas/internal/biz"
 
@@ -38,8 +40,8 @@ func assetPB(a *biz.Asset) *v1.Asset {
 		Os:          a.OS,
 		Status:      a.Status,
 		Description: a.Description,
-		CreatedAt:   timePB(a.CreatedAt),
-		UpdatedAt:   timePB(a.UpdatedAt),
+		CreatedAt:   timestamppb.New(a.CreatedAt),
+		UpdatedAt:   timestamppb.New(a.UpdatedAt),
 	}
 }
 
