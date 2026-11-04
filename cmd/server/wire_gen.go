@@ -36,7 +36,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	appService := service.NewAppService(appUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, assetService, appService, logger)
 	httpServer := server.NewHTTPServer(confServer, assetService, appService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	cacheEvictor, err := data.NewCacheEvictor(confData, dataData, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	app := newApp(logger, grpcServer, httpServer, cacheEvictor)
 	return app, func() {
 		cleanup()
 	}, nil

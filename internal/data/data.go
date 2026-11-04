@@ -19,7 +19,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo)
+var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo, NewCacheEvictor)
 
 // Data 持有 DB/Redis 连接与 gorm-gen 生成的类型安全 Query
 type Data struct {
@@ -69,21 +69,8 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, fmt.Errorf("connect redis: %w", err)
 	}
 
-	// canal binlog 订阅（缓存一致性通道）：按配置开关，未部署 RocketMQ 前默认关闭
-	var stopBinlog func()
-	if c.Rocketmq != nil && c.Rocketmq.Enabled {
-		stop, err := startBinlogSubscriber(c.Rocketmq, rdb, logger)
-		if err != nil {
-			return nil, nil, fmt.Errorf("start canal binlog subscriber: %w", err)
-		}
-		stopBinlog = stop
-	}
-
 	cleanup := func() {
 		helper.Info("closing the data resources")
-		if stopBinlog != nil {
-			stopBinlog()
-		}
 		_ = sqlDB.Close()
 		_ = rdb.Close()
 	}

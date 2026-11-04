@@ -7,9 +7,9 @@ import (
 	"github.com/clearlove456/paas/internal/conf"
 	"github.com/clearlove456/paas/pkg/cachex"
 	"github.com/clearlove456/paas/pkg/rmqx"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/redis/go-redis/v9"
 )
 
 // 缓存一致性链路（写路径零侵入，业务代码完全不碰缓存）：
@@ -44,7 +44,7 @@ type delayMsg struct {
 // binlogEvictor 缓存淘汰消费者
 type binlogEvictor struct {
 	rdb    *redis.Client
-	sender *rmqx.Sender // 延迟消息发送器
+	sender *rmqx.Sender
 }
 
 // handleBinlog 消费 paas-canal（canal 投递的 binlog 变更）：
@@ -82,36 +82,57 @@ func (e *binlogEvictor) handleDelay(ctx context.Context, body []byte) error {
 	return nil
 }
 
-// startBinlogSubscriber 装配并启动缓存淘汰消费者，返回停止函数
-func startBinlogSubscriber(c *conf.Data_Rocketmq, rdb *redis.Client, logger log.Logger) (func(), error) {
-	sender, err := rmqx.NewSender(c.NameSrvAddrs)
+// CacheEvictor 缓存淘汰消费者，实现 kratos Server 接口，
+// 与 HTTP/gRPC 一样在 cmd/server/main.go 的 kratos.Server(...) 统一注册启停。
+type CacheEvictor struct {
+	listener *rmqx.Listener
+	sender   *rmqx.Sender
+	disabled bool // rocketmq 未启用时的 no-op 实例
+}
+
+// NewCacheEvictor 构建缓存淘汰消费者；rocketmq 未启用时返回空实现
+func NewCacheEvictor(c *conf.Data, d *Data, logger log.Logger) (*CacheEvictor, error) {
+	if c.Rocketmq == nil || !c.Rocketmq.Enabled {
+		log.Info("rocketmq disabled, cache evictor skipped")
+		return &CacheEvictor{disabled: true}, nil
+	}
+
+	sender, err := rmqx.NewSender(c.Rocketmq.NameSrvAddrs)
 	if err != nil {
 		return nil, err
 	}
-
-	e := &binlogEvictor{rdb: rdb, sender: sender}
+	e := &binlogEvictor{rdb: d.rdb, sender: sender}
 	listener, err := rmqx.NewListener(rmqx.Config{
-		NameServers: c.NameSrvAddrs,
-		Group:       c.Group,
+		NameServers: c.Rocketmq.NameSrvAddrs,
+		Group:       c.Rocketmq.Group,
 		Subscriptions: map[string]rmqx.Handler{
-			c.Topic:    e.handleBinlog, // canal 投递 binlog 的主题
-			delayTopic: e.handleDelay,  // 延迟双删主题
+			c.Rocketmq.Topic: e.handleBinlog, // canal 投递 binlog 的主题
+			delayTopic:       e.handleDelay,  // 延迟双删主题
 		},
 	})
 	if err != nil {
 		return nil, err
 	}
+	return &CacheEvictor{listener: listener, sender: sender}, nil
+}
 
-	if err := sender.Start(); err != nil {
-		return nil, err
+// Start 实现 kratos Server 接口：开始消费
+func (s *CacheEvictor) Start(_ context.Context) error {
+	if s.disabled {
+		return nil
 	}
-	if err := listener.Start(); err != nil {
-		return nil, err
+	if err := s.sender.Start(); err != nil {
+		return err
 	}
-	log.Infof("cache evictor started: binlog topic=%s, delay topic=%s, group=%s", c.Topic, delayTopic, c.Group)
+	return s.listener.Start()
+}
 
-	return func() {
-		listener.Stop()
-		sender.Close()
-	}, nil
+// Stop 实现 kratos Server 接口：停止消费
+func (s *CacheEvictor) Stop(_ context.Context) error {
+	if s.disabled {
+		return nil
+	}
+	s.listener.Stop()
+	s.sender.Close()
+	return nil
 }

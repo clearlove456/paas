@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/clearlove456/paas/internal/conf"
+	"github.com/clearlove456/paas/internal/data"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -33,7 +34,9 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+// newApp 组装应用。所有可启动的组件（HTTP/gRPC/MQ 消费者...）
+// 都实现 kratos Server 接口，统一在这里注册，由 app 托管启停。
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, evictor *data.CacheEvictor) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -43,6 +46,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 		kratos.Server(
 			gs,
 			hs,
+			evictor, // MQ 消费者：canal binlog → 缓存延迟双删
 		),
 	)
 }
