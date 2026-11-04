@@ -130,6 +130,7 @@ type Data struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Database      *Data_Database         `protobuf:"bytes,1,opt,name=database,proto3" json:"database,omitempty"`
 	Redis         *Data_Redis            `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
+	Rocketmq      *Data_Rocketmq         `protobuf:"bytes,3,opt,name=rocketmq,proto3" json:"rocketmq,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -174,6 +175,13 @@ func (x *Data) GetDatabase() *Data_Database {
 func (x *Data) GetRedis() *Data_Redis {
 	if x != nil {
 		return x.Redis
+	}
+	return nil
+}
+
+func (x *Data) GetRocketmq() *Data_Rocketmq {
+	if x != nil {
+		return x.Rocketmq
 	}
 	return nil
 }
@@ -426,6 +434,75 @@ func (x *Data_Redis) GetPassword() string {
 	return ""
 }
 
+// canal binlog 订阅（缓存一致性兜底通道，经 RocketMQ 投递）
+type Data_Rocketmq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`                                // 未部署 RocketMQ 前设为 false
+	NameSrvAddrs  []string               `protobuf:"bytes,2,rep,name=name_srv_addrs,json=nameSrvAddrs,proto3" json:"name_srv_addrs,omitempty"` // NameServer 地址
+	Topic         string                 `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`                                     // canal 投递 binlog 的主题
+	Group         string                 `protobuf:"bytes,4,opt,name=group,proto3" json:"group,omitempty"`                                     // 消费组
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Data_Rocketmq) Reset() {
+	*x = Data_Rocketmq{}
+	mi := &file_conf_conf_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data_Rocketmq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data_Rocketmq) ProtoMessage() {}
+
+func (x *Data_Rocketmq) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data_Rocketmq.ProtoReflect.Descriptor instead.
+func (*Data_Rocketmq) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{2, 2}
+}
+
+func (x *Data_Rocketmq) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *Data_Rocketmq) GetNameSrvAddrs() []string {
+	if x != nil {
+		return x.NameSrvAddrs
+	}
+	return nil
+}
+
+func (x *Data_Rocketmq) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *Data_Rocketmq) GetGroup() string {
+	if x != nil {
+		return x.Group
+	}
+	return ""
+}
+
 var File_conf_conf_proto protoreflect.FileDescriptor
 
 const file_conf_conf_proto_rawDesc = "" +
@@ -445,10 +522,11 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xf9\x02\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xa8\x04\n" +
 	"\x04Data\x125\n" +
 	"\bdatabase\x18\x01 \x01(\v2\x19.kratos.api.Data.DatabaseR\bdatabase\x12,\n" +
-	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x1a:\n" +
+	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x125\n" +
+	"\brocketmq\x18\x03 \x01(\v2\x19.kratos.api.Data.RocketmqR\brocketmq\x1a:\n" +
 	"\bDatabase\x12\x16\n" +
 	"\x06driver\x18\x01 \x01(\tR\x06driver\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\x1a\xcf\x01\n" +
@@ -457,7 +535,12 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12<\n" +
 	"\fread_timeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\vreadTimeout\x12>\n" +
 	"\rwrite_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeout\x12\x1a\n" +
-	"\bpassword\x18\x05 \x01(\tR\bpasswordB1Z/github.com/clearlove456/paas/internal/conf;confb\x06proto3"
+	"\bpassword\x18\x05 \x01(\tR\bpassword\x1av\n" +
+	"\bRocketmq\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12$\n" +
+	"\x0ename_srv_addrs\x18\x02 \x03(\tR\fnameSrvAddrs\x12\x14\n" +
+	"\x05topic\x18\x03 \x01(\tR\x05topic\x12\x14\n" +
+	"\x05group\x18\x04 \x01(\tR\x05groupB1Z/github.com/clearlove456/paas/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_conf_proto_rawDescOnce sync.Once
@@ -471,7 +554,7 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
 	(*Server)(nil),              // 1: kratos.api.Server
@@ -480,7 +563,8 @@ var file_conf_conf_proto_goTypes = []any{
 	(*Server_GRPC)(nil),         // 4: kratos.api.Server.GRPC
 	(*Data_Database)(nil),       // 5: kratos.api.Data.Database
 	(*Data_Redis)(nil),          // 6: kratos.api.Data.Redis
-	(*durationpb.Duration)(nil), // 7: google.protobuf.Duration
+	(*Data_Rocketmq)(nil),       // 7: kratos.api.Data.Rocketmq
+	(*durationpb.Duration)(nil), // 8: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
@@ -489,15 +573,16 @@ var file_conf_conf_proto_depIdxs = []int32{
 	4,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
 	5,  // 4: kratos.api.Data.database:type_name -> kratos.api.Data.Database
 	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	7,  // 6: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	7,  // 7: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	7,  // 8: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	7,  // 9: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	7,  // 6: kratos.api.Data.rocketmq:type_name -> kratos.api.Data.Rocketmq
+	8,  // 7: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	8,  // 8: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	8,  // 9: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	8,  // 10: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -511,7 +596,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

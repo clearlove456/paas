@@ -15,3 +15,8 @@ data:
     password: your-redis-password
     read_timeout: 0.2s
     write_timeout: 0.2s
+  rocketmq:
+    enabled: false
+    name_srv_addrs: ["127.0.0.1:9876"]
+    topic: paas-canal
+    group: paas-cache-evictor

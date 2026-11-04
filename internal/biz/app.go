@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -139,7 +138,7 @@ func (uc *AppUsecase) GetApp(ctx context.Context, id int64) (*App, error) {
 func (uc *AppUsecase) ListApp(ctx context.Context, page, pageSize int64, env, keyword string) ([]*App, int64, error) {
 	offset, limit, ok := normalizePage(page, pageSize)
 	if !ok {
-		return nil, 0, withMsg(ErrAppInvalid, fmt.Sprintf("page_size 不能超过 %d", maxPageSize))
+		return nil, 0, withMsg(ErrAppInvalid, "page_size 不能超过 %d", maxPageSize)
 	}
 	return uc.repo.ListByCondition(ctx, &ListAppCondition{
 		Offset: offset, Limit: limit, Env: env, Keyword: keyword,

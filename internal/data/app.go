@@ -3,12 +3,22 @@ package data
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/clearlove456/paas/internal/biz"
 	"github.com/clearlove456/paas/internal/data/model"
+	"github.com/clearlove456/paas/pkg/cachex"
 
 	"gorm.io/gorm"
 )
+
+// appCacheCfg 应用缓存策略：与资产一致（5min + 2min 抖动，空值 60s）
+var appCacheCfg = cachex.Config{
+	Prefix:  "paas:app:",
+	TTL:     5 * time.Minute,
+	Jitter:  2 * time.Minute,
+	NullTTL: 60 * time.Second,
+}
 
 type appRepo struct {
 	data *Data
@@ -58,7 +68,7 @@ func (r *appRepo) Save(ctx context.Context, a *biz.App) (*biz.App, error) {
 	return appBiz(po), nil
 }
 
-// Update 按 ID 全量更新
+// Update 按 ID 全量更新。不碰缓存：淘汰由 binlog 订阅通道负责（延迟双删）。
 func (r *appRepo) Update(ctx context.Context, a *biz.App) (*biz.App, error) {
 	po := appPO(a)
 	info, err := r.data.q.App.WithContext(ctx).
@@ -82,7 +92,7 @@ func (r *appRepo) Update(ctx context.Context, a *biz.App) (*biz.App, error) {
 	return r.FindByID(ctx, a.ID)
 }
 
-// Delete 软删除
+// Delete 软删除。不碰缓存：淘汰由 binlog 订阅通道负责。
 func (r *appRepo) Delete(ctx context.Context, id int64) error {
 	info, err := r.data.q.App.WithContext(ctx).
 		Where(r.data.q.App.ID.Eq(id)).
@@ -96,18 +106,24 @@ func (r *appRepo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-// FindByID 按 ID 查询
+// FindByID 按 ID 查询：读路径走 cachex.Aside（三防同资产）
 func (r *appRepo) FindByID(ctx context.Context, id int64) (*biz.App, error) {
-	po, err := r.data.q.App.WithContext(ctx).
-		Where(r.data.q.App.ID.Eq(id)).
-		First()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, biz.ErrAppNotFound
-		}
-		return nil, err
-	}
-	return appBiz(po), nil
+	return cachex.Aside(ctx, r.data.rdb, &r.data.sf, appCacheCfg, appCacheCfg.Key(id),
+		func(ctx context.Context) (*biz.App, error) {
+			po, err := r.data.q.App.WithContext(ctx).
+				Where(r.data.q.App.ID.Eq(id)).
+				First()
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return nil, biz.ErrAppNotFound
+				}
+				return nil, err
+			}
+			return appBiz(po), nil
+		},
+		func(err error) bool { return err == biz.ErrAppNotFound },
+		biz.ErrAppNotFound,
+	)
 }
 
 // FindByName 按应用名查询（唯一索引）

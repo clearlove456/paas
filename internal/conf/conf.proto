@@ -37,6 +37,14 @@ message Data {
     google.protobuf.Duration write_timeout = 4;
     string password = 5;
   }
+  // canal binlog 订阅（缓存一致性兜底通道，经 RocketMQ 投递）
+  message Rocketmq {
+    bool enabled = 1;                    // 未部署 RocketMQ 前设为 false
+    repeated string name_srv_addrs = 2;  // NameServer 地址
+    string topic = 3;                    // canal 投递 binlog 的主题
+    string group = 4;                    // 消费组
+  }
   Database database = 1;
   Redis redis = 2;
+  Rocketmq rocketmq = 3;
 }

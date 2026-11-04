@@ -64,6 +64,11 @@ wire-gen:
 db:
 	bash scripts/init_db.sh
 
+.PHONY: canal
+# deploy canal-server on remote server: mysql binlog -> kafka (cache evict channel)
+canal:
+	bash scripts/setup_canal.sh
+
 .PHONY: all
 # generate all
 all:

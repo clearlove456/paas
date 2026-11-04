@@ -13,6 +13,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,7 @@ type Data struct {
 	db  *gorm.DB
 	rdb *redis.Client
 	q   *query.Query
+	sf  singleflight.Group // 缓存击穿防护：合并同 key 并发回源
 }
 
 // NewData 连接 MySQL/Redis，自动建表，初始化 Query
@@ -67,8 +69,21 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		return nil, nil, fmt.Errorf("connect redis: %w", err)
 	}
 
+	// canal binlog 订阅（缓存一致性通道）：按配置开关，未部署 RocketMQ 前默认关闭
+	var stopBinlog func()
+	if c.Rocketmq != nil && c.Rocketmq.Enabled {
+		stop, err := startBinlogSubscriber(c.Rocketmq, &Data{rdb: rdb}, logger)
+		if err != nil {
+			return nil, nil, fmt.Errorf("start canal binlog subscriber: %w", err)
+		}
+		stopBinlog = stop
+	}
+
 	cleanup := func() {
 		helper.Info("closing the data resources")
+		if stopBinlog != nil {
+			stopBinlog()
+		}
 		_ = sqlDB.Close()
 		_ = rdb.Close()
 	}
