@@ -13,8 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// assetCacheCfg 资产缓存策略：5min + 2min 抖动防雪崩，空值缓存 60s 防穿透
-var assetCacheCfg = cachex.Config{
+// AssetCacheCfg 资产缓存策略：5min + 2min 抖动防雪崩，空值缓存 60s 防穿透
+var AssetCacheCfg = cachex.Config{
 	Prefix:  "paas:asset:",
 	TTL:     5 * time.Minute,
 	Jitter:  2 * time.Minute,
@@ -114,7 +114,7 @@ func (r *assetRepo) Delete(ctx context.Context, id int64) error {
 // FindByID 按 ID 查询：读路径走 cachex.Aside
 // （singleflight 防击穿 + TTL 抖动防雪崩 + 空值缓存防穿透）
 func (r *assetRepo) FindByID(ctx context.Context, id int64) (*biz.Asset, error) {
-	return cachex.Aside(ctx, r.data.rdb, &r.data.sf, assetCacheCfg, assetCacheCfg.Key(id),
+	return cachex.Aside(ctx, r.data.rdb, &r.data.sf, AssetCacheCfg, AssetCacheCfg.Key(id),
 		func(ctx context.Context) (*biz.Asset, error) {
 			po, err := r.data.q.Asset.WithContext(ctx).
 				Where(r.data.q.Asset.ID.Eq(id)).

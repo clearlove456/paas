@@ -9,6 +9,7 @@ import (
 	"github.com/clearlove456/paas/internal/biz"
 	"github.com/clearlove456/paas/internal/conf"
 	"github.com/clearlove456/paas/internal/data"
+	"github.com/clearlove456/paas/internal/data/consumer"
 	"github.com/clearlove456/paas/internal/server"
 	"github.com/clearlove456/paas/internal/service"
 
@@ -19,5 +20,5 @@ import (
 
 // wireApp init kratos application.
 func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, consumer.ProviderSet, newApp))
 }

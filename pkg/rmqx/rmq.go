@@ -1,4 +1,4 @@
-// Package rmqx RocketMQ 通用收发组件：多主题监听 + 延迟消息发送。
+// Package rmqx RocketMQ 通用收发组件：消费者监听 + 延迟消息发送。
 // 只面向 topic，不关心消息是谁生产的（canal、其他服务...）。
 package rmqx
 
@@ -39,20 +39,21 @@ type syncProducer interface {
 	SendSync(ctx context.Context, mq ...*primitive.Message) (*primitive.SendResult, error)
 }
 
-// Listener MQ 监听器：一个消费组，订阅多个主题
+// Listener MQ 监听器：一个消费组订阅一个主题
 type Listener struct {
 	c pushConsumer
 }
 
-// Config 监听配置
-type Config struct {
-	NameServers   []string
-	Group         string
-	Subscriptions map[string]Handler // topic -> 消息处理器
+// ListenConfig 监听配置：一个消费组 + 一个主题 + 一个处理函数
+type ListenConfig struct {
+	NameServers []string
+	Group       string
+	Topic       string
+	Handler     Handler
 }
 
 // NewListener 创建监听器（未启动）
-func NewListener(cfg Config) (*Listener, error) {
+func NewListener(cfg ListenConfig) (*Listener, error) {
 	c, err := consumer.NewPushConsumer(
 		consumer.WithGroupName(cfg.Group),
 		consumer.WithNameServer(cfg.NameServers),
@@ -60,10 +61,8 @@ func NewListener(cfg Config) (*Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	for topic, h := range cfg.Subscriptions {
-		if err := subscribe(c, topic, h); err != nil {
-			return nil, err
-		}
+	if err := subscribe(c, cfg.Topic, cfg.Handler); err != nil {
+		return nil, err
 	}
 	return &Listener{c: c}, nil
 }

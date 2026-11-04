@@ -19,7 +19,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo, NewCacheEvictor)
+var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo)
 
 // Data 持有 DB/Redis 连接与 gorm-gen 生成的类型安全 Query
 type Data struct {
@@ -79,3 +79,6 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 
 // Query 暴露给 repo 实现使用
 func (d *Data) Query() *query.Query { return d.q }
+
+// Redis 暴露给 consumer 等组件使用
+func (d *Data) Redis() *redis.Client { return d.rdb }

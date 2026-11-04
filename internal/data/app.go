@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// appCacheCfg 应用缓存策略：与资产一致（5min + 2min 抖动，空值 60s）
-var appCacheCfg = cachex.Config{
+// AppCacheCfg 应用缓存策略：与资产一致（5min + 2min 抖动，空值 60s）
+var AppCacheCfg = cachex.Config{
 	Prefix:  "paas:app:",
 	TTL:     5 * time.Minute,
 	Jitter:  2 * time.Minute,
@@ -108,7 +108,7 @@ func (r *appRepo) Delete(ctx context.Context, id int64) error {
 
 // FindByID 按 ID 查询：读路径走 cachex.Aside（三防同资产）
 func (r *appRepo) FindByID(ctx context.Context, id int64) (*biz.App, error) {
-	return cachex.Aside(ctx, r.data.rdb, &r.data.sf, appCacheCfg, appCacheCfg.Key(id),
+	return cachex.Aside(ctx, r.data.rdb, &r.data.sf, AppCacheCfg, AppCacheCfg.Key(id),
 		func(ctx context.Context) (*biz.App, error) {
 			po, err := r.data.q.App.WithContext(ctx).
 				Where(r.data.q.App.ID.Eq(id)).

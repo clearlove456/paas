@@ -1,10 +1,10 @@
-package data
+package consumer
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/clearlove456/paas/internal/conf"
+	"github.com/clearlove456/paas/internal/data"
 	"github.com/clearlove456/paas/pkg/cachex"
 	"github.com/clearlove456/paas/pkg/rmqx"
 
@@ -28,12 +28,15 @@ const (
 	evictDelayLevel = rmqx.DelayLevel5s
 	// delayTopic 延迟双删主题
 	delayTopic = "paas-cache-evict"
+	// delayGroup 第二删的独立消费组：RocketMQ 要求同一消费组的订阅关系
+	// 在所有实例上完全一致，和 binlog 消费者分开组，避免订阅互相顶掉
+	delayGroup = "paas-cache-evict-delay"
 )
 
 // binlogKeyCfgs binlog 变更表 -> 缓存配置，新增带缓存的表在这里注册
 var binlogKeyCfgs = map[string]cachex.Config{
-	"assets": assetCacheCfg,
-	"apps":   appCacheCfg,
+	"assets": data.AssetCacheCfg,
+	"apps":   data.AppCacheCfg,
 }
 
 // delayMsg 延迟消息体：5s 后要删的缓存 key
@@ -41,15 +44,20 @@ type delayMsg struct {
 	Keys []string `json:"keys"`
 }
 
-// binlogEvictor 缓存淘汰消费者
-type binlogEvictor struct {
+// cacheEvictor 缓存淘汰消费者
+type cacheEvictor struct {
 	rdb    *redis.Client
 	sender *rmqx.Sender
 }
 
+// newCacheEvictor 构建缓存淘汰消费者
+func newCacheEvictor(rdb *redis.Client, sender *rmqx.Sender) *cacheEvictor {
+	return &cacheEvictor{rdb: rdb, sender: sender}
+}
+
 // handleBinlog 消费 paas-canal（canal 投递的 binlog 变更）：
 // 每行变更立即删一次，并发一条 5s 延迟消息
-func (e *binlogEvictor) handleBinlog(ctx context.Context, body []byte) error {
+func (e *cacheEvictor) handleBinlog(ctx context.Context, body []byte) error {
 	for _, ev := range rmqx.ParseCanal(body, "id") {
 		cfg, ok := binlogKeyCfgs[ev.Table]
 		if !ok {
@@ -73,66 +81,11 @@ func (e *binlogEvictor) handleBinlog(ctx context.Context, body []byte) error {
 
 // handleDelay 消费 paas-cache-evict（自己发的延迟消息到期）：
 // ③ 第二删
-func (e *binlogEvictor) handleDelay(ctx context.Context, body []byte) error {
+func (e *cacheEvictor) handleDelay(ctx context.Context, body []byte) error {
 	var msg delayMsg
 	if json.Unmarshal(body, &msg) == nil {
 		cachex.Evict(ctx, e.rdb, msg.Keys...)
 		log.Infof("delayed second evict: %v", msg.Keys)
 	}
-	return nil
-}
-
-// CacheEvictor 缓存淘汰消费者，实现 kratos Server 接口，
-// 与 HTTP/gRPC 一样在 cmd/server/main.go 的 kratos.Server(...) 统一注册启停。
-type CacheEvictor struct {
-	listener *rmqx.Listener
-	sender   *rmqx.Sender
-	disabled bool // rocketmq 未启用时的 no-op 实例
-}
-
-// NewCacheEvictor 构建缓存淘汰消费者；rocketmq 未启用时返回空实现
-func NewCacheEvictor(c *conf.Data, d *Data, logger log.Logger) (*CacheEvictor, error) {
-	if c.Rocketmq == nil || !c.Rocketmq.Enabled {
-		log.Info("rocketmq disabled, cache evictor skipped")
-		return &CacheEvictor{disabled: true}, nil
-	}
-
-	sender, err := rmqx.NewSender(c.Rocketmq.NameSrvAddrs)
-	if err != nil {
-		return nil, err
-	}
-	e := &binlogEvictor{rdb: d.rdb, sender: sender}
-	listener, err := rmqx.NewListener(rmqx.Config{
-		NameServers: c.Rocketmq.NameSrvAddrs,
-		Group:       c.Rocketmq.Group,
-		Subscriptions: map[string]rmqx.Handler{
-			c.Rocketmq.Topic: e.handleBinlog, // canal 投递 binlog 的主题
-			delayTopic:       e.handleDelay,  // 延迟双删主题
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &CacheEvictor{listener: listener, sender: sender}, nil
-}
-
-// Start 实现 kratos Server 接口：开始消费
-func (s *CacheEvictor) Start(_ context.Context) error {
-	if s.disabled {
-		return nil
-	}
-	if err := s.sender.Start(); err != nil {
-		return err
-	}
-	return s.listener.Start()
-}
-
-// Stop 实现 kratos Server 接口：停止消费
-func (s *CacheEvictor) Stop(_ context.Context) error {
-	if s.disabled {
-		return nil
-	}
-	s.listener.Stop()
-	s.sender.Close()
 	return nil
 }
