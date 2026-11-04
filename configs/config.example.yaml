@@ -1,0 +1,17 @@
+# 复制为 config.yaml 并填入真实连接信息（config.yaml 不入 git）
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: user:password@tcp(host:3306)/paas?charset=utf8mb4&parseTime=True&loc=Local
+  redis:
+    addr: host:6379
+    password: your-redis-password
+    read_timeout: 0.2s
+    write_timeout: 0.2s

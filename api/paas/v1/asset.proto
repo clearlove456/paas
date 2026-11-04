@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package paas.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/clearlove456/paas/api/paas/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.paas.api.paas.v1";
+option java_outer_classname = "AssetProtoV1";
+
+// 资产服务：CMDB 主机资产管理
+service AssetService {
+  // 创建资产
+  rpc CreateAsset (CreateAssetRequest) returns (CreateAssetReply) {
+    option (google.api.http) = {
+      post: "/api/v1/assets"
+      body: "*"
+    };
+  }
+  // 更新资产（全量更新）
+  rpc UpdateAsset (UpdateAssetRequest) returns (UpdateAssetReply) {
+    option (google.api.http) = {
+      put: "/api/v1/assets/{asset.id}"
+      body: "*"
+    };
+  }
+  // 删除资产（软删除）
+  rpc DeleteAsset (DeleteAssetRequest) returns (DeleteAssetReply) {
+    option (google.api.http) = {
+      delete: "/api/v1/assets/{id}"
+    };
+  }
+  // 查询资产详情
+  rpc GetAsset (GetAssetRequest) returns (GetAssetReply) {
+    option (google.api.http) = {
+      get: "/api/v1/assets/{id}"
+    };
+  }
+  // 分页查询资产列表，支持按环境和关键字过滤
+  rpc ListAsset (ListAssetRequest) returns (ListAssetReply) {
+    option (google.api.http) = {
+      get: "/api/v1/assets"
+    };
+  }
+}
+
+// 主机资产
+message Asset {
+  int64 id = 1;
+  string hostname = 2;     // 主机名，唯一
+  string ip = 3;           // 内网 IP
+  string env = 4;          // 所属环境: dev / staging / prod
+  string region = 5;       // 地域，如 ap-guangzhou
+  int32 cpu = 6;           // CPU 核数
+  int32 memory = 7;        // 内存 GB
+  string os = 8;           // 操作系统，如 Ubuntu 24.04
+  string status = 9;       // 状态: online / offline / maintenance
+  string description = 10; // 备注
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message CreateAssetRequest {
+  Asset asset = 1;
+}
+message CreateAssetReply {
+  Asset asset = 1;
+}
+
+message UpdateAssetRequest {
+  Asset asset = 1;
+}
+message UpdateAssetReply {
+  Asset asset = 1;
+}
+
+message DeleteAssetRequest {
+  int64 id = 1;
+}
+message DeleteAssetReply {}
+
+message GetAssetRequest {
+  int64 id = 1;
+}
+message GetAssetReply {
+  Asset asset = 1;
+}
+
+message ListAssetRequest {
+  int64 page = 1;         // 从 1 开始
+  int64 page_size = 2;    // 默认 20，最大 100
+  string env = 3;         // 按环境过滤
+  string keyword = 4;     // 按 hostname / ip 模糊搜索
+}
+message ListAssetReply {
+  repeated Asset items = 1;
+  int64 total = 2;
+}

@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package paas.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/clearlove456/paas/api/paas/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.paas.api.paas.v1";
+option java_outer_classname = "AppProtoV1";
+
+// 应用服务：管理部署在 K8s 上的应用元信息
+service AppService {
+  // 创建应用
+  rpc CreateApp (CreateAppRequest) returns (CreateAppReply) {
+    option (google.api.http) = {
+      post: "/api/v1/apps"
+      body: "*"
+    };
+  }
+  // 更新应用（全量更新）
+  rpc UpdateApp (UpdateAppRequest) returns (UpdateAppReply) {
+    option (google.api.http) = {
+      put: "/api/v1/apps/{app.id}"
+      body: "*"
+    };
+  }
+  // 删除应用
+  rpc DeleteApp (DeleteAppRequest) returns (DeleteAppReply) {
+    option (google.api.http) = {
+      delete: "/api/v1/apps/{id}"
+    };
+  }
+  // 查询应用详情
+  rpc GetApp (GetAppRequest) returns (GetAppReply) {
+    option (google.api.http) = {
+      get: "/api/v1/apps/{id}"
+    };
+  }
+  // 分页查询应用列表
+  rpc ListApp (ListAppRequest) returns (ListAppReply) {
+    option (google.api.http) = {
+      get: "/api/v1/apps"
+    };
+  }
+}
+
+// 应用：一个可部署的服务单元
+message App {
+  int64 id = 1;
+  string name = 2;          // 应用名，唯一，如 user-center
+  string description = 3;   // 应用描述
+  string repo_url = 4;      // 代码仓库地址
+  string image = 5;         // 容器镜像，如 registry.example.com/user-center:v1.0.0
+  int32 replicas = 6;       // 副本数
+  int32 container_port = 7; // 容器监听端口
+  string env = 8;           // 所属环境: dev / staging / prod
+  string status = 9;        // 状态: draft / deployed / stopped
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message CreateAppRequest {
+  App app = 1;
+}
+message CreateAppReply {
+  App app = 1;
+}
+
+message UpdateAppRequest {
+  App app = 1;
+}
+message UpdateAppReply {
+  App app = 1;
+}
+
+message DeleteAppRequest {
+  int64 id = 1;
+}
+message DeleteAppReply {}
+
+message GetAppRequest {
+  int64 id = 1;
+}
+message GetAppReply {
+  App app = 1;
+}
+
+message ListAppRequest {
+  int64 page = 1;
+  int64 page_size = 2;
+  string env = 3;
+  string keyword = 4;    // 按 name 模糊搜索
+}
+message ListAppReply {
+  repeated App items = 1;
+  int64 total = 2;
+}

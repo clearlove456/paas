@@ -1,0 +1,371 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /api/v1/apps:
+        get:
+            tags:
+                - AppService
+            description: 分页查询应用列表
+            operationId: AppService_ListApp
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: string
+                - name: env
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.ListAppReply'
+        post:
+            tags:
+                - AppService
+            description: 创建应用
+            operationId: AppService_CreateApp
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/paas.v1.CreateAppRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.CreateAppReply'
+    /api/v1/apps/{app.id}:
+        put:
+            tags:
+                - AppService
+            description: 更新应用（全量更新）
+            operationId: AppService_UpdateApp
+            parameters:
+                - name: app.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/paas.v1.UpdateAppRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.UpdateAppReply'
+    /api/v1/apps/{id}:
+        get:
+            tags:
+                - AppService
+            description: 查询应用详情
+            operationId: AppService_GetApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.GetAppReply'
+        delete:
+            tags:
+                - AppService
+            description: 删除应用
+            operationId: AppService_DeleteApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.DeleteAppReply'
+    /api/v1/assets:
+        get:
+            tags:
+                - AssetService
+            description: 分页查询资产列表，支持按环境和关键字过滤
+            operationId: AssetService_ListAsset
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: string
+                - name: env
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.ListAssetReply'
+        post:
+            tags:
+                - AssetService
+            description: 创建资产
+            operationId: AssetService_CreateAsset
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/paas.v1.CreateAssetRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.CreateAssetReply'
+    /api/v1/assets/{asset.id}:
+        put:
+            tags:
+                - AssetService
+            description: 更新资产（全量更新）
+            operationId: AssetService_UpdateAsset
+            parameters:
+                - name: asset.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/paas.v1.UpdateAssetRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.UpdateAssetReply'
+    /api/v1/assets/{id}:
+        get:
+            tags:
+                - AssetService
+            description: 查询资产详情
+            operationId: AssetService_GetAsset
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.GetAssetReply'
+        delete:
+            tags:
+                - AssetService
+            description: 删除资产（软删除）
+            operationId: AssetService_DeleteAsset
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.DeleteAssetReply'
+components:
+    schemas:
+        paas.v1.App:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                repoUrl:
+                    type: string
+                image:
+                    type: string
+                replicas:
+                    type: integer
+                    format: int32
+                containerPort:
+                    type: integer
+                    format: int32
+                env:
+                    type: string
+                status:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: 应用：一个可部署的服务单元
+        paas.v1.Asset:
+            type: object
+            properties:
+                id:
+                    type: string
+                hostname:
+                    type: string
+                ip:
+                    type: string
+                env:
+                    type: string
+                region:
+                    type: string
+                cpu:
+                    type: integer
+                    format: int32
+                memory:
+                    type: integer
+                    format: int32
+                os:
+                    type: string
+                status:
+                    type: string
+                description:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: 主机资产
+        paas.v1.CreateAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.CreateAppRequest:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.CreateAssetReply:
+            type: object
+            properties:
+                asset:
+                    $ref: '#/components/schemas/paas.v1.Asset'
+        paas.v1.CreateAssetRequest:
+            type: object
+            properties:
+                asset:
+                    $ref: '#/components/schemas/paas.v1.Asset'
+        paas.v1.DeleteAppReply:
+            type: object
+            properties: {}
+        paas.v1.DeleteAssetReply:
+            type: object
+            properties: {}
+        paas.v1.GetAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.GetAssetReply:
+            type: object
+            properties:
+                asset:
+                    $ref: '#/components/schemas/paas.v1.Asset'
+        paas.v1.ListAppReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/paas.v1.App'
+                total:
+                    type: string
+        paas.v1.ListAssetReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/paas.v1.Asset'
+                total:
+                    type: string
+        paas.v1.UpdateAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.UpdateAppRequest:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.UpdateAssetReply:
+            type: object
+            properties:
+                asset:
+                    $ref: '#/components/schemas/paas.v1.Asset'
+        paas.v1.UpdateAssetRequest:
+            type: object
+            properties:
+                asset:
+                    $ref: '#/components/schemas/paas.v1.Asset'
+tags:
+    - name: AppService
+      description: 应用服务：管理部署在 K8s 上的应用元信息
+    - name: AssetService
+      description: 资产服务：CMDB 主机资产管理

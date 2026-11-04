@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package paas.v1;
+
+import "errors/errors.proto";
+
+option go_package = "github.com/clearlove456/paas/api/paas/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.paas.api.paas.v1";
+option java_outer_classname = "ErrorReasonProtoV1";
+
+// 业务错误码定义。reason 全局唯一，前端/网关按 reason 分支处理。
+// 生成命令: make api (依赖 protoc-gen-go-errors)
+enum ErrorReason {
+  ASSET_NOT_FOUND = 0 [(errors.code) = 404];
+  ASSET_HOST_CONFLICT = 1 [(errors.code) = 409];
+  ASSET_INVALID = 2 [(errors.code) = 400];
+  APP_NOT_FOUND = 3 [(errors.code) = 404];
+  APP_NAME_CONFLICT = 4 [(errors.code) = 409];
+  APP_INVALID = 5 [(errors.code) = 400];
+}
