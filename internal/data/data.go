@@ -72,7 +72,7 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	// canal binlog 订阅（缓存一致性通道）：按配置开关，未部署 RocketMQ 前默认关闭
 	var stopBinlog func()
 	if c.Rocketmq != nil && c.Rocketmq.Enabled {
-		stop, err := startBinlogSubscriber(c.Rocketmq, &Data{rdb: rdb}, logger)
+		stop, err := startBinlogSubscriber(c.Rocketmq, rdb, logger)
 		if err != nil {
 			return nil, nil, fmt.Errorf("start canal binlog subscriber: %w", err)
 		}

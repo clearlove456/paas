@@ -24,6 +24,26 @@ const (
 // Handler 单条消息回调；返回 error 时 RocketMQ 按重试策略重投
 type Handler func(ctx context.Context, body []byte) error
 
+// pushConsumer / syncProducer：rocketmq-client-go v2.1.x 的构造函数返回
+// 未导出类型，这里用接口把它们接住，使其可以作为结构体字段持有。
+type pushConsumer interface {
+	Subscribe(topic string, selector consumer.MessageSelector,
+		f func(context.Context, ...*primitive.MessageExt) (consumer.ConsumeResult, error)) error
+	Start() error
+	Shutdown() error
+}
+
+type syncProducer interface {
+	Start() error
+	Shutdown() error
+	SendSync(ctx context.Context, mq ...*primitive.Message) (*primitive.SendResult, error)
+}
+
+// Listener MQ 监听器：一个消费组，订阅多个主题
+type Listener struct {
+	c pushConsumer
+}
+
 // Config 监听配置
 type Config struct {
 	NameServers   []string
@@ -31,11 +51,8 @@ type Config struct {
 	Subscriptions map[string]Handler // topic -> 消息处理器
 }
 
-// Listen 创建并启动一个多主题消费者，返回 stop。
-// 注：rocketmq-client-go v2.1.x 的 NewPushConsumer 返回未导出类型，故用闭包捕获实例。
-func Listen(cfg Config, logger log.Logger) (func(), error) {
-	helper := log.NewHelper(log.With(logger, "module", "rmqx/listener"))
-
+// NewListener 创建监听器（未启动）
+func NewListener(cfg Config) (*Listener, error) {
 	c, err := consumer.NewPushConsumer(
 		consumer.WithGroupName(cfg.Group),
 		consumer.WithNameServer(cfg.NameServers),
@@ -44,77 +61,70 @@ func Listen(cfg Config, logger log.Logger) (func(), error) {
 		return nil, err
 	}
 	for topic, h := range cfg.Subscriptions {
-		handler := h
-		if err := c.Subscribe(topic, consumer.MessageSelector{},
-			func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
-				for _, m := range msgs {
-					if err := handler(ctx, m.Body); err != nil {
-						return consumer.ConsumeRetryLater, err
-					}
-				}
-				return consumer.ConsumeSuccess, nil
-			}); err != nil {
+		if err := subscribe(c, topic, h); err != nil {
 			return nil, err
 		}
 	}
-	if err := c.Start(); err != nil {
-		return nil, err
-	}
+	return &Listener{c: c}, nil
+}
 
-	topics := make([]string, 0, len(cfg.Subscriptions))
-	for t := range cfg.Subscriptions {
-		topics = append(topics, t)
-	}
-	helper.Infof("rmq listener started: group=%s topics=%v", cfg.Group, topics)
+// Start 开始消费
+func (l *Listener) Start() error { return l.c.Start() }
 
-	return func() {
-		if err := c.Shutdown(); err != nil {
-			helper.Warnf("listener shutdown: %v", err)
-		}
-	}, nil
+// Stop 停止消费
+func (l *Listener) Stop() {
+	if err := l.c.Shutdown(); err != nil {
+		log.Warnf("rmqx listener shutdown: %v", err)
+	}
+}
+
+// subscribe 把 Handler 适配成 RocketMQ 的回调签名
+func subscribe(c pushConsumer, topic string, h Handler) error {
+	return c.Subscribe(topic, consumer.MessageSelector{},
+		func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+			for _, m := range msgs {
+				if err := h(ctx, m.Body); err != nil {
+					return consumer.ConsumeRetryLater, err
+				}
+			}
+			return consumer.ConsumeSuccess, nil
+		})
 }
 
 // Sender 消息发送器（含延迟消息）
 type Sender struct {
-	send  func(ctx context.Context, topic string, body []byte, delayLevel int) error
-	close func()
+	p syncProducer
 }
 
-// NewSender 创建并启动发送器
+// NewSender 创建发送器（未启动）
 func NewSender(nameServers []string) (*Sender, error) {
 	p, err := producer.NewDefaultProducer(producer.WithNameServer(nameServers))
 	if err != nil {
 		return nil, err
 	}
-	if err := p.Start(); err != nil {
-		return nil, err
+	return &Sender{p: p}, nil
+}
+
+// Start 启动发送器
+func (s *Sender) Start() error { return s.p.Start() }
+
+// Close 关闭发送器
+func (s *Sender) Close() {
+	if err := s.p.Shutdown(); err != nil {
+		log.Warnf("rmqx sender shutdown: %v", err)
 	}
-	return &Sender{
-		send: func(ctx context.Context, topic string, body []byte, delayLevel int) error {
-			msg := primitive.NewMessage(topic, body)
-			if delayLevel > 0 {
-				msg.WithDelayTimeLevel(delayLevel)
-			}
-			_, err := p.SendSync(ctx, msg)
-			return err
-		},
-		close: func() {
-			if err := p.Shutdown(); err != nil {
-				log.Warnf("rmqx sender shutdown: %v", err)
-			}
-		},
-	}, nil
 }
 
 // Send 普通发送
 func (s *Sender) Send(ctx context.Context, topic string, body []byte) error {
-	return s.send(ctx, topic, body, 0)
+	_, err := s.p.SendSync(ctx, primitive.NewMessage(topic, body))
+	return err
 }
 
 // SendDelay 延迟发送，delayLevel 见 DelayLevelXXX 常量
 func (s *Sender) SendDelay(ctx context.Context, topic string, body []byte, delayLevel int) error {
-	return s.send(ctx, topic, body, delayLevel)
+	msg := primitive.NewMessage(topic, body)
+	msg.WithDelayTimeLevel(delayLevel)
+	_, err := s.p.SendSync(ctx, msg)
+	return err
 }
-
-// Close 关闭发送器
-func (s *Sender) Close() { s.close() }
