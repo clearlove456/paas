@@ -82,3 +82,59 @@ func IsAppInvalid(err error) bool {
 func ErrorAppInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(400, ErrorReason_APP_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// 未发布就 stop/scale/rollback，或 K8s 资源不存在
+func IsAppNotDeployed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_APP_NOT_DEPLOYED.String() && e.Code == 409
+}
+
+// 未发布就 stop/scale/rollback，或 K8s 资源不存在
+func ErrorAppNotDeployed(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_APP_NOT_DEPLOYED.String(), fmt.Sprintf(format, args...))
+}
+
+// 发布/扩缩等待就绪超时（K8s 资源已保留）
+func IsAppDeployTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_APP_DEPLOY_TIMEOUT.String() && e.Code == 504
+}
+
+// 发布/扩缩等待就绪超时（K8s 资源已保留）
+func ErrorAppDeployTimeout(format string, args ...interface{}) *errors.Error {
+	return errors.New(504, ErrorReason_APP_DEPLOY_TIMEOUT.String(), fmt.Sprintf(format, args...))
+}
+
+// 没有可回滚的历史版本
+func IsAppRollbackFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_APP_ROLLBACK_FAILED.String() && e.Code == 409
+}
+
+// 没有可回滚的历史版本
+func ErrorAppRollbackFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_APP_ROLLBACK_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 其他 K8s 操作失败
+func IsAppDeployFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_APP_DEPLOY_FAILED.String() && e.Code == 500
+}
+
+// 其他 K8s 操作失败
+func ErrorAppDeployFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_APP_DEPLOY_FAILED.String(), fmt.Sprintf(format, args...))
+}

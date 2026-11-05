@@ -612,6 +612,595 @@ func (x *ListAppReply) GetTotal() int64 {
 	return 0
 }
 
+type PublishAppRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishAppRequest) Reset() {
+	*x = PublishAppRequest{}
+	mi := &file_paas_v1_app_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishAppRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishAppRequest) ProtoMessage() {}
+
+func (x *PublishAppRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishAppRequest.ProtoReflect.Descriptor instead.
+func (*PublishAppRequest) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PublishAppRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type PublishAppReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	App           *App                   `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"` // status=deployed
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishAppReply) Reset() {
+	*x = PublishAppReply{}
+	mi := &file_paas_v1_app_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishAppReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishAppReply) ProtoMessage() {}
+
+func (x *PublishAppReply) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishAppReply.ProtoReflect.Descriptor instead.
+func (*PublishAppReply) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PublishAppReply) GetApp() *App {
+	if x != nil {
+		return x.App
+	}
+	return nil
+}
+
+type StopAppRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StopAppRequest) Reset() {
+	*x = StopAppRequest{}
+	mi := &file_paas_v1_app_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StopAppRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StopAppRequest) ProtoMessage() {}
+
+func (x *StopAppRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StopAppRequest.ProtoReflect.Descriptor instead.
+func (*StopAppRequest) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *StopAppRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type StopAppReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	App           *App                   `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"` // status=stopped
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StopAppReply) Reset() {
+	*x = StopAppReply{}
+	mi := &file_paas_v1_app_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StopAppReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StopAppReply) ProtoMessage() {}
+
+func (x *StopAppReply) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StopAppReply.ProtoReflect.Descriptor instead.
+func (*StopAppReply) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *StopAppReply) GetApp() *App {
+	if x != nil {
+		return x.App
+	}
+	return nil
+}
+
+type ScaleAppRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Replicas      int32                  `protobuf:"varint,2,opt,name=replicas,proto3" json:"replicas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScaleAppRequest) Reset() {
+	*x = ScaleAppRequest{}
+	mi := &file_paas_v1_app_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScaleAppRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScaleAppRequest) ProtoMessage() {}
+
+func (x *ScaleAppRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScaleAppRequest.ProtoReflect.Descriptor instead.
+func (*ScaleAppRequest) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ScaleAppRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ScaleAppRequest) GetReplicas() int32 {
+	if x != nil {
+		return x.Replicas
+	}
+	return 0
+}
+
+type ScaleAppReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	App           *App                   `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScaleAppReply) Reset() {
+	*x = ScaleAppReply{}
+	mi := &file_paas_v1_app_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScaleAppReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScaleAppReply) ProtoMessage() {}
+
+func (x *ScaleAppReply) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScaleAppReply.ProtoReflect.Descriptor instead.
+func (*ScaleAppReply) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ScaleAppReply) GetApp() *App {
+	if x != nil {
+		return x.App
+	}
+	return nil
+}
+
+type RollbackAppRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RollbackAppRequest) Reset() {
+	*x = RollbackAppRequest{}
+	mi := &file_paas_v1_app_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackAppRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackAppRequest) ProtoMessage() {}
+
+func (x *RollbackAppRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackAppRequest.ProtoReflect.Descriptor instead.
+func (*RollbackAppRequest) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *RollbackAppRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type RollbackAppReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	App           *App                   `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RollbackAppReply) Reset() {
+	*x = RollbackAppReply{}
+	mi := &file_paas_v1_app_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackAppReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackAppReply) ProtoMessage() {}
+
+func (x *RollbackAppReply) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackAppReply.ProtoReflect.Descriptor instead.
+func (*RollbackAppReply) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *RollbackAppReply) GetApp() *App {
+	if x != nil {
+		return x.App
+	}
+	return nil
+}
+
+type GetAppDeployStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAppDeployStatusRequest) Reset() {
+	*x = GetAppDeployStatusRequest{}
+	mi := &file_paas_v1_app_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAppDeployStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAppDeployStatusRequest) ProtoMessage() {}
+
+func (x *GetAppDeployStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAppDeployStatusRequest.ProtoReflect.Descriptor instead.
+func (*GetAppDeployStatusRequest) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetAppDeployStatusRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// 部署就绪条件（Progressing / Available）
+type DeployCondition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeployCondition) Reset() {
+	*x = DeployCondition{}
+	mi := &file_paas_v1_app_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeployCondition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeployCondition) ProtoMessage() {}
+
+func (x *DeployCondition) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeployCondition.ProtoReflect.Descriptor instead.
+func (*DeployCondition) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DeployCondition) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *DeployCondition) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *DeployCondition) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *DeployCondition) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type GetAppDeployStatusReply struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	AppId             int64                  `protobuf:"varint,1,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty"`
+	Env               string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
+	Namespace         string                 `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	DesiredReplicas   int32                  `protobuf:"varint,4,opt,name=desired_replicas,json=desiredReplicas,proto3" json:"desired_replicas,omitempty"`       // 期望副本
+	UpdatedReplicas   int32                  `protobuf:"varint,5,opt,name=updated_replicas,json=updatedReplicas,proto3" json:"updated_replicas,omitempty"`       // 已更新到最新模板的副本
+	ReadyReplicas     int32                  `protobuf:"varint,6,opt,name=ready_replicas,json=readyReplicas,proto3" json:"ready_replicas,omitempty"`             // 就绪副本
+	AvailableReplicas int32                  `protobuf:"varint,7,opt,name=available_replicas,json=availableReplicas,proto3" json:"available_replicas,omitempty"` // 可用副本
+	Image             string                 `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`                                                   // 集群实际运行镜像（回滚后可能与 DB 记录不同）
+	NodePort          int32                  `protobuf:"varint,9,opt,name=node_port,json=nodePort,proto3" json:"node_port,omitempty"`                            // 节点访问端口，0 表示未分配
+	Conditions        []*DeployCondition     `protobuf:"bytes,10,rep,name=conditions,proto3" json:"conditions,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetAppDeployStatusReply) Reset() {
+	*x = GetAppDeployStatusReply{}
+	mi := &file_paas_v1_app_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAppDeployStatusReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAppDeployStatusReply) ProtoMessage() {}
+
+func (x *GetAppDeployStatusReply) ProtoReflect() protoreflect.Message {
+	mi := &file_paas_v1_app_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAppDeployStatusReply.ProtoReflect.Descriptor instead.
+func (*GetAppDeployStatusReply) Descriptor() ([]byte, []int) {
+	return file_paas_v1_app_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetAppDeployStatusReply) GetAppId() int64 {
+	if x != nil {
+		return x.AppId
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetEnv() string {
+	if x != nil {
+		return x.Env
+	}
+	return ""
+}
+
+func (x *GetAppDeployStatusReply) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *GetAppDeployStatusReply) GetDesiredReplicas() int32 {
+	if x != nil {
+		return x.DesiredReplicas
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetUpdatedReplicas() int32 {
+	if x != nil {
+		return x.UpdatedReplicas
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetReadyReplicas() int32 {
+	if x != nil {
+		return x.ReadyReplicas
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetAvailableReplicas() int32 {
+	if x != nil {
+		return x.AvailableReplicas
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
+func (x *GetAppDeployStatusReply) GetNodePort() int32 {
+	if x != nil {
+		return x.NodePort
+	}
+	return 0
+}
+
+func (x *GetAppDeployStatusReply) GetConditions() []*DeployCondition {
+	if x != nil {
+		return x.Conditions
+	}
+	return nil
+}
+
 var File_paas_v1_app_proto protoreflect.FileDescriptor
 
 const file_paas_v1_app_proto_rawDesc = "" +
@@ -654,14 +1243,58 @@ const file_paas_v1_app_proto_rawDesc = "" +
 	"\akeyword\x18\x04 \x01(\tR\akeyword\"H\n" +
 	"\fListAppReply\x12\"\n" +
 	"\x05items\x18\x01 \x03(\v2\f.paas.v1.AppR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total2\xc9\x03\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"#\n" +
+	"\x11PublishAppRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"1\n" +
+	"\x0fPublishAppReply\x12\x1e\n" +
+	"\x03app\x18\x01 \x01(\v2\f.paas.v1.AppR\x03app\" \n" +
+	"\x0eStopAppRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\".\n" +
+	"\fStopAppReply\x12\x1e\n" +
+	"\x03app\x18\x01 \x01(\v2\f.paas.v1.AppR\x03app\"=\n" +
+	"\x0fScaleAppRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\breplicas\x18\x02 \x01(\x05R\breplicas\"/\n" +
+	"\rScaleAppReply\x12\x1e\n" +
+	"\x03app\x18\x01 \x01(\v2\f.paas.v1.AppR\x03app\"$\n" +
+	"\x12RollbackAppRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"2\n" +
+	"\x10RollbackAppReply\x12\x1e\n" +
+	"\x03app\x18\x01 \x01(\v2\f.paas.v1.AppR\x03app\"+\n" +
+	"\x19GetAppDeployStatusRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"o\n" +
+	"\x0fDeployCondition\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\"\xf9\x02\n" +
+	"\x17GetAppDeployStatusReply\x12\x15\n" +
+	"\x06app_id\x18\x01 \x01(\x03R\x05appId\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12\x1c\n" +
+	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12)\n" +
+	"\x10desired_replicas\x18\x04 \x01(\x05R\x0fdesiredReplicas\x12)\n" +
+	"\x10updated_replicas\x18\x05 \x01(\x05R\x0fupdatedReplicas\x12%\n" +
+	"\x0eready_replicas\x18\x06 \x01(\x05R\rreadyReplicas\x12-\n" +
+	"\x12available_replicas\x18\a \x01(\x05R\x11availableReplicas\x12\x14\n" +
+	"\x05image\x18\b \x01(\tR\x05image\x12\x1b\n" +
+	"\tnode_port\x18\t \x01(\x05R\bnodePort\x128\n" +
+	"\n" +
+	"conditions\x18\n" +
+	" \x03(\v2\x18.paas.v1.DeployConditionR\n" +
+	"conditions2\xde\a\n" +
 	"\n" +
 	"AppService\x12X\n" +
 	"\tCreateApp\x12\x19.paas.v1.CreateAppRequest\x1a\x17.paas.v1.CreateAppReply\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/api/v1/apps\x12a\n" +
 	"\tUpdateApp\x12\x19.paas.v1.UpdateAppRequest\x1a\x17.paas.v1.UpdateAppReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/api/v1/apps/{app.id}\x12Z\n" +
 	"\tDeleteApp\x12\x19.paas.v1.DeleteAppRequest\x1a\x17.paas.v1.DeleteAppReply\"\x19\x82\xd3\xe4\x93\x02\x13*\x11/api/v1/apps/{id}\x12Q\n" +
 	"\x06GetApp\x12\x16.paas.v1.GetAppRequest\x1a\x14.paas.v1.GetAppReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/v1/apps/{id}\x12O\n" +
-	"\aListApp\x12\x17.paas.v1.ListAppRequest\x1a\x15.paas.v1.ListAppReply\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/api/v1/appsBQ\n" +
+	"\aListApp\x12\x17.paas.v1.ListAppRequest\x1a\x15.paas.v1.ListAppReply\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/api/v1/apps\x12e\n" +
+	"\n" +
+	"PublishApp\x12\x1a.paas.v1.PublishAppRequest\x1a\x18.paas.v1.PublishAppReply\"!\x82\xd3\xe4\x93\x02\x1b\"\x19/api/v1/apps/{id}/publish\x12Y\n" +
+	"\aStopApp\x12\x17.paas.v1.StopAppRequest\x1a\x15.paas.v1.StopAppReply\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x16/api/v1/apps/{id}/stop\x12`\n" +
+	"\bScaleApp\x12\x18.paas.v1.ScaleAppRequest\x1a\x16.paas.v1.ScaleAppReply\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\x1a\x17/api/v1/apps/{id}/scale\x12i\n" +
+	"\vRollbackApp\x12\x1b.paas.v1.RollbackAppRequest\x1a\x19.paas.v1.RollbackAppReply\"\"\x82\xd3\xe4\x93\x02\x1c\"\x1a/api/v1/apps/{id}/rollback\x12\x83\x01\n" +
+	"\x12GetAppDeployStatus\x12\".paas.v1.GetAppDeployStatusRequest\x1a .paas.v1.GetAppDeployStatusReply\"'\x82\xd3\xe4\x93\x02!\x12\x1f/api/v1/apps/{id}/deploy-statusBQ\n" +
 	"\x14dev.paas.api.paas.v1B\n" +
 	"AppProtoV1P\x01Z+github.com/clearlove456/paas/api/paas/v1;v1b\x06proto3"
 
@@ -677,45 +1310,71 @@ func file_paas_v1_app_proto_rawDescGZIP() []byte {
 	return file_paas_v1_app_proto_rawDescData
 }
 
-var file_paas_v1_app_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_paas_v1_app_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_paas_v1_app_proto_goTypes = []any{
-	(*App)(nil),                   // 0: paas.v1.App
-	(*CreateAppRequest)(nil),      // 1: paas.v1.CreateAppRequest
-	(*CreateAppReply)(nil),        // 2: paas.v1.CreateAppReply
-	(*UpdateAppRequest)(nil),      // 3: paas.v1.UpdateAppRequest
-	(*UpdateAppReply)(nil),        // 4: paas.v1.UpdateAppReply
-	(*DeleteAppRequest)(nil),      // 5: paas.v1.DeleteAppRequest
-	(*DeleteAppReply)(nil),        // 6: paas.v1.DeleteAppReply
-	(*GetAppRequest)(nil),         // 7: paas.v1.GetAppRequest
-	(*GetAppReply)(nil),           // 8: paas.v1.GetAppReply
-	(*ListAppRequest)(nil),        // 9: paas.v1.ListAppRequest
-	(*ListAppReply)(nil),          // 10: paas.v1.ListAppReply
-	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
+	(*App)(nil),                       // 0: paas.v1.App
+	(*CreateAppRequest)(nil),          // 1: paas.v1.CreateAppRequest
+	(*CreateAppReply)(nil),            // 2: paas.v1.CreateAppReply
+	(*UpdateAppRequest)(nil),          // 3: paas.v1.UpdateAppRequest
+	(*UpdateAppReply)(nil),            // 4: paas.v1.UpdateAppReply
+	(*DeleteAppRequest)(nil),          // 5: paas.v1.DeleteAppRequest
+	(*DeleteAppReply)(nil),            // 6: paas.v1.DeleteAppReply
+	(*GetAppRequest)(nil),             // 7: paas.v1.GetAppRequest
+	(*GetAppReply)(nil),               // 8: paas.v1.GetAppReply
+	(*ListAppRequest)(nil),            // 9: paas.v1.ListAppRequest
+	(*ListAppReply)(nil),              // 10: paas.v1.ListAppReply
+	(*PublishAppRequest)(nil),         // 11: paas.v1.PublishAppRequest
+	(*PublishAppReply)(nil),           // 12: paas.v1.PublishAppReply
+	(*StopAppRequest)(nil),            // 13: paas.v1.StopAppRequest
+	(*StopAppReply)(nil),              // 14: paas.v1.StopAppReply
+	(*ScaleAppRequest)(nil),           // 15: paas.v1.ScaleAppRequest
+	(*ScaleAppReply)(nil),             // 16: paas.v1.ScaleAppReply
+	(*RollbackAppRequest)(nil),        // 17: paas.v1.RollbackAppRequest
+	(*RollbackAppReply)(nil),          // 18: paas.v1.RollbackAppReply
+	(*GetAppDeployStatusRequest)(nil), // 19: paas.v1.GetAppDeployStatusRequest
+	(*DeployCondition)(nil),           // 20: paas.v1.DeployCondition
+	(*GetAppDeployStatusReply)(nil),   // 21: paas.v1.GetAppDeployStatusReply
+	(*timestamppb.Timestamp)(nil),     // 22: google.protobuf.Timestamp
 }
 var file_paas_v1_app_proto_depIdxs = []int32{
-	11, // 0: paas.v1.App.created_at:type_name -> google.protobuf.Timestamp
-	11, // 1: paas.v1.App.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 0: paas.v1.App.created_at:type_name -> google.protobuf.Timestamp
+	22, // 1: paas.v1.App.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: paas.v1.CreateAppRequest.app:type_name -> paas.v1.App
 	0,  // 3: paas.v1.CreateAppReply.app:type_name -> paas.v1.App
 	0,  // 4: paas.v1.UpdateAppRequest.app:type_name -> paas.v1.App
 	0,  // 5: paas.v1.UpdateAppReply.app:type_name -> paas.v1.App
 	0,  // 6: paas.v1.GetAppReply.app:type_name -> paas.v1.App
 	0,  // 7: paas.v1.ListAppReply.items:type_name -> paas.v1.App
-	1,  // 8: paas.v1.AppService.CreateApp:input_type -> paas.v1.CreateAppRequest
-	3,  // 9: paas.v1.AppService.UpdateApp:input_type -> paas.v1.UpdateAppRequest
-	5,  // 10: paas.v1.AppService.DeleteApp:input_type -> paas.v1.DeleteAppRequest
-	7,  // 11: paas.v1.AppService.GetApp:input_type -> paas.v1.GetAppRequest
-	9,  // 12: paas.v1.AppService.ListApp:input_type -> paas.v1.ListAppRequest
-	2,  // 13: paas.v1.AppService.CreateApp:output_type -> paas.v1.CreateAppReply
-	4,  // 14: paas.v1.AppService.UpdateApp:output_type -> paas.v1.UpdateAppReply
-	6,  // 15: paas.v1.AppService.DeleteApp:output_type -> paas.v1.DeleteAppReply
-	8,  // 16: paas.v1.AppService.GetApp:output_type -> paas.v1.GetAppReply
-	10, // 17: paas.v1.AppService.ListApp:output_type -> paas.v1.ListAppReply
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 8: paas.v1.PublishAppReply.app:type_name -> paas.v1.App
+	0,  // 9: paas.v1.StopAppReply.app:type_name -> paas.v1.App
+	0,  // 10: paas.v1.ScaleAppReply.app:type_name -> paas.v1.App
+	0,  // 11: paas.v1.RollbackAppReply.app:type_name -> paas.v1.App
+	20, // 12: paas.v1.GetAppDeployStatusReply.conditions:type_name -> paas.v1.DeployCondition
+	1,  // 13: paas.v1.AppService.CreateApp:input_type -> paas.v1.CreateAppRequest
+	3,  // 14: paas.v1.AppService.UpdateApp:input_type -> paas.v1.UpdateAppRequest
+	5,  // 15: paas.v1.AppService.DeleteApp:input_type -> paas.v1.DeleteAppRequest
+	7,  // 16: paas.v1.AppService.GetApp:input_type -> paas.v1.GetAppRequest
+	9,  // 17: paas.v1.AppService.ListApp:input_type -> paas.v1.ListAppRequest
+	11, // 18: paas.v1.AppService.PublishApp:input_type -> paas.v1.PublishAppRequest
+	13, // 19: paas.v1.AppService.StopApp:input_type -> paas.v1.StopAppRequest
+	15, // 20: paas.v1.AppService.ScaleApp:input_type -> paas.v1.ScaleAppRequest
+	17, // 21: paas.v1.AppService.RollbackApp:input_type -> paas.v1.RollbackAppRequest
+	19, // 22: paas.v1.AppService.GetAppDeployStatus:input_type -> paas.v1.GetAppDeployStatusRequest
+	2,  // 23: paas.v1.AppService.CreateApp:output_type -> paas.v1.CreateAppReply
+	4,  // 24: paas.v1.AppService.UpdateApp:output_type -> paas.v1.UpdateAppReply
+	6,  // 25: paas.v1.AppService.DeleteApp:output_type -> paas.v1.DeleteAppReply
+	8,  // 26: paas.v1.AppService.GetApp:output_type -> paas.v1.GetAppReply
+	10, // 27: paas.v1.AppService.ListApp:output_type -> paas.v1.ListAppReply
+	12, // 28: paas.v1.AppService.PublishApp:output_type -> paas.v1.PublishAppReply
+	14, // 29: paas.v1.AppService.StopApp:output_type -> paas.v1.StopAppReply
+	16, // 30: paas.v1.AppService.ScaleApp:output_type -> paas.v1.ScaleAppReply
+	18, // 31: paas.v1.AppService.RollbackApp:output_type -> paas.v1.RollbackAppReply
+	21, // 32: paas.v1.AppService.GetAppDeployStatus:output_type -> paas.v1.GetAppDeployStatusReply
+	23, // [23:33] is the sub-list for method output_type
+	13, // [13:23] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_paas_v1_app_proto_init() }
@@ -729,7 +1388,7 @@ func file_paas_v1_app_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_paas_v1_app_proto_rawDesc), len(file_paas_v1_app_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

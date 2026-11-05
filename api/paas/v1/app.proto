@@ -44,6 +44,37 @@ service AppService {
       get: "/api/v1/apps"
     };
   }
+  // 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+  rpc PublishApp (PublishAppRequest) returns (PublishAppReply) {
+    option (google.api.http) = {
+      post: "/api/v1/apps/{id}/publish"
+    };
+  }
+  // 停止应用（删除 K8s 资源，保留应用记录）
+  rpc StopApp (StopAppRequest) returns (StopAppReply) {
+    option (google.api.http) = {
+      post: "/api/v1/apps/{id}/stop"
+    };
+  }
+  // 扩缩容（同步等待就绪）
+  rpc ScaleApp (ScaleAppRequest) returns (ScaleAppReply) {
+    option (google.api.http) = {
+      put: "/api/v1/apps/{id}/scale"
+      body: "*"
+    };
+  }
+  // 回滚到上一个发布版本
+  rpc RollbackApp (RollbackAppRequest) returns (RollbackAppReply) {
+    option (google.api.http) = {
+      post: "/api/v1/apps/{id}/rollback"
+    };
+  }
+  // 查询部署实时状态（直读 K8s，不查缓存）
+  rpc GetAppDeployStatus (GetAppDeployStatusRequest) returns (GetAppDeployStatusReply) {
+    option (google.api.http) = {
+      get: "/api/v1/apps/{id}/deploy-status"
+    };
+  }
 }
 
 // 应用：一个可部署的服务单元
@@ -96,4 +127,56 @@ message ListAppRequest {
 message ListAppReply {
   repeated App items = 1;
   int64 total = 2;
+}
+
+message PublishAppRequest {
+  int64 id = 1;
+}
+message PublishAppReply {
+  App app = 1; // status=deployed
+}
+
+message StopAppRequest {
+  int64 id = 1;
+}
+message StopAppReply {
+  App app = 1; // status=stopped
+}
+
+message ScaleAppRequest {
+  int64 id = 1;
+  int32 replicas = 2;
+}
+message ScaleAppReply {
+  App app = 1;
+}
+
+message RollbackAppRequest {
+  int64 id = 1;
+}
+message RollbackAppReply {
+  App app = 1;
+}
+
+message GetAppDeployStatusRequest {
+  int64 id = 1;
+}
+// 部署就绪条件（Progressing / Available）
+message DeployCondition {
+  string type = 1;
+  string status = 2;
+  string reason = 3;
+  string message = 4;
+}
+message GetAppDeployStatusReply {
+  int64 app_id = 1;
+  string env = 2;
+  string namespace = 3;
+  int32 desired_replicas = 4;   // 期望副本
+  int32 updated_replicas = 5;   // 已更新到最新模板的副本
+  int32 ready_replicas = 6;     // 就绪副本
+  int32 available_replicas = 7; // 可用副本
+  string image = 8;             // 集群实际运行镜像（回滚后可能与 DB 记录不同）
+  int32 node_port = 9;          // 节点访问端口，0 表示未分配
+  repeated DeployCondition conditions = 10;
 }

@@ -18,4 +18,8 @@ enum ErrorReason {
   APP_NOT_FOUND = 3 [(errors.code) = 404];
   APP_NAME_CONFLICT = 4 [(errors.code) = 409];
   APP_INVALID = 5 [(errors.code) = 400];
+  APP_NOT_DEPLOYED = 6 [(errors.code) = 409];    // 未发布就 stop/scale/rollback，或 K8s 资源不存在
+  APP_DEPLOY_TIMEOUT = 7 [(errors.code) = 504];  // 发布/扩缩等待就绪超时（K8s 资源已保留）
+  APP_ROLLBACK_FAILED = 8 [(errors.code) = 409]; // 没有可回滚的历史版本
+  APP_DEPLOY_FAILED = 9 [(errors.code) = 500];   // 其他 K8s 操作失败
 }

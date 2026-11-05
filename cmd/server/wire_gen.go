@@ -24,7 +24,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, kubernetes *conf.Kubernetes, logger log.Logger) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
@@ -33,7 +33,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	assetUsecase := biz.NewAssetUsecase(assetRepo, logger)
 	assetService := service.NewAssetService(assetUsecase, logger)
 	appRepo := data.NewAppRepo(dataData)
-	appUsecase := biz.NewAppUsecase(appRepo, logger)
+	appDeployer, err := data.NewAppDeployer(kubernetes)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	appUsecase := biz.NewAppUsecase(appRepo, appDeployer, logger)
 	appService := service.NewAppService(appUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, assetService, appService, logger)
 	httpServer := server.NewHTTPServer(confServer, assetService, appService, logger)

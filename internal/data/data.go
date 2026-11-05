@@ -19,7 +19,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo)
+var ProviderSet = wire.NewSet(NewData, NewAssetRepo, NewAppRepo, NewAppDeployer)
 
 // Data 持有 DB/Redis 连接与 gorm-gen 生成的类型安全 Query
 type Data struct {

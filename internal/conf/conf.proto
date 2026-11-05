@@ -8,12 +8,14 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Kubernetes kubernetes = 3;
 }
 
 message Server {
   message HTTP {
     string network = 1;
     string addr = 2;
+    // 注意：发布接口同步等待应用就绪（最长 3min），超时需大于它
     google.protobuf.Duration timeout = 3;
   }
   message GRPC {
@@ -23,6 +25,13 @@ message Server {
   }
   HTTP http = 1;
   GRPC grpc = 2;
+}
+
+// K8s 集群接入（应用发布）。namespace 规则/等待超时/label 等已写死在代码，
+// 只有环境相关项进配置
+message Kubernetes {
+  bool enabled = 1;      // 无集群时 false：服务正常启动，发布接口报错
+  string kubeconfig = 2; // kubeconfig 绝对路径；为空则 in-cluster（Phase 2 部署进集群用）
 }
 
 message Data {
@@ -37,12 +46,16 @@ message Data {
     google.protobuf.Duration write_timeout = 4;
     string password = 5;
   }
-  // canal binlog 订阅（缓存一致性兜底通道，经 RocketMQ 投递）
+  // MQ 消费者配置（canal binlog 订阅等，经 RocketMQ 投递）
   message Rocketmq {
     bool enabled = 1;                    // 未部署 RocketMQ 前设为 false
     repeated string name_srv_addrs = 2;  // NameServer 地址
-    string topic = 3;                    // canal 投递 binlog 的主题
-    string group = 4;                    // 消费组
+    // 全部消费者的订阅配置，key 为消费者全局标识 name（与代码注册表一致）
+    map<string, RocketmqConsumer> consumers = 3;
+  }
+  message RocketmqConsumer {
+    string group = 1;  // 消费组
+    string topic = 2;  // 订阅主题
   }
   Database database = 1;
   Redis redis = 2;

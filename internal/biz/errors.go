@@ -25,4 +25,10 @@ var (
 	ErrAppNotFound     = v1.ErrorAppNotFound("应用不存在")
 	ErrAppNameConflict = v1.ErrorAppNameConflict("应用名已存在")
 	ErrAppInvalid      = v1.ErrorAppInvalid("应用参数不合法")
+
+	// 应用发布相关
+	ErrAppNotDeployed    = v1.ErrorAppNotDeployed("应用尚未部署")
+	ErrAppDeployTimeout  = v1.ErrorAppDeployTimeout("等待应用就绪超时")
+	ErrAppRollbackFailed = v1.ErrorAppRollbackFailed("回滚失败")
+	ErrAppDeployFailed   = v1.ErrorAppDeployFailed("发布失败")
 )

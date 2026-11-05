@@ -19,11 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppService_CreateApp_FullMethodName = "/paas.v1.AppService/CreateApp"
-	AppService_UpdateApp_FullMethodName = "/paas.v1.AppService/UpdateApp"
-	AppService_DeleteApp_FullMethodName = "/paas.v1.AppService/DeleteApp"
-	AppService_GetApp_FullMethodName    = "/paas.v1.AppService/GetApp"
-	AppService_ListApp_FullMethodName   = "/paas.v1.AppService/ListApp"
+	AppService_CreateApp_FullMethodName          = "/paas.v1.AppService/CreateApp"
+	AppService_UpdateApp_FullMethodName          = "/paas.v1.AppService/UpdateApp"
+	AppService_DeleteApp_FullMethodName          = "/paas.v1.AppService/DeleteApp"
+	AppService_GetApp_FullMethodName             = "/paas.v1.AppService/GetApp"
+	AppService_ListApp_FullMethodName            = "/paas.v1.AppService/ListApp"
+	AppService_PublishApp_FullMethodName         = "/paas.v1.AppService/PublishApp"
+	AppService_StopApp_FullMethodName            = "/paas.v1.AppService/StopApp"
+	AppService_ScaleApp_FullMethodName           = "/paas.v1.AppService/ScaleApp"
+	AppService_RollbackApp_FullMethodName        = "/paas.v1.AppService/RollbackApp"
+	AppService_GetAppDeployStatus_FullMethodName = "/paas.v1.AppService/GetAppDeployStatus"
 )
 
 // AppServiceClient is the client API for AppService service.
@@ -42,6 +47,16 @@ type AppServiceClient interface {
 	GetApp(ctx context.Context, in *GetAppRequest, opts ...grpc.CallOption) (*GetAppReply, error)
 	// 分页查询应用列表
 	ListApp(ctx context.Context, in *ListAppRequest, opts ...grpc.CallOption) (*ListAppReply, error)
+	// 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+	PublishApp(ctx context.Context, in *PublishAppRequest, opts ...grpc.CallOption) (*PublishAppReply, error)
+	// 停止应用（删除 K8s 资源，保留应用记录）
+	StopApp(ctx context.Context, in *StopAppRequest, opts ...grpc.CallOption) (*StopAppReply, error)
+	// 扩缩容（同步等待就绪）
+	ScaleApp(ctx context.Context, in *ScaleAppRequest, opts ...grpc.CallOption) (*ScaleAppReply, error)
+	// 回滚到上一个发布版本
+	RollbackApp(ctx context.Context, in *RollbackAppRequest, opts ...grpc.CallOption) (*RollbackAppReply, error)
+	// 查询部署实时状态（直读 K8s，不查缓存）
+	GetAppDeployStatus(ctx context.Context, in *GetAppDeployStatusRequest, opts ...grpc.CallOption) (*GetAppDeployStatusReply, error)
 }
 
 type appServiceClient struct {
@@ -102,6 +117,56 @@ func (c *appServiceClient) ListApp(ctx context.Context, in *ListAppRequest, opts
 	return out, nil
 }
 
+func (c *appServiceClient) PublishApp(ctx context.Context, in *PublishAppRequest, opts ...grpc.CallOption) (*PublishAppReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PublishAppReply)
+	err := c.cc.Invoke(ctx, AppService_PublishApp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) StopApp(ctx context.Context, in *StopAppRequest, opts ...grpc.CallOption) (*StopAppReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StopAppReply)
+	err := c.cc.Invoke(ctx, AppService_StopApp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) ScaleApp(ctx context.Context, in *ScaleAppRequest, opts ...grpc.CallOption) (*ScaleAppReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScaleAppReply)
+	err := c.cc.Invoke(ctx, AppService_ScaleApp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) RollbackApp(ctx context.Context, in *RollbackAppRequest, opts ...grpc.CallOption) (*RollbackAppReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RollbackAppReply)
+	err := c.cc.Invoke(ctx, AppService_RollbackApp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) GetAppDeployStatus(ctx context.Context, in *GetAppDeployStatusRequest, opts ...grpc.CallOption) (*GetAppDeployStatusReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAppDeployStatusReply)
+	err := c.cc.Invoke(ctx, AppService_GetAppDeployStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AppServiceServer is the server API for AppService service.
 // All implementations must embed UnimplementedAppServiceServer
 // for forward compatibility.
@@ -118,6 +183,16 @@ type AppServiceServer interface {
 	GetApp(context.Context, *GetAppRequest) (*GetAppReply, error)
 	// 分页查询应用列表
 	ListApp(context.Context, *ListAppRequest) (*ListAppReply, error)
+	// 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+	PublishApp(context.Context, *PublishAppRequest) (*PublishAppReply, error)
+	// 停止应用（删除 K8s 资源，保留应用记录）
+	StopApp(context.Context, *StopAppRequest) (*StopAppReply, error)
+	// 扩缩容（同步等待就绪）
+	ScaleApp(context.Context, *ScaleAppRequest) (*ScaleAppReply, error)
+	// 回滚到上一个发布版本
+	RollbackApp(context.Context, *RollbackAppRequest) (*RollbackAppReply, error)
+	// 查询部署实时状态（直读 K8s，不查缓存）
+	GetAppDeployStatus(context.Context, *GetAppDeployStatusRequest) (*GetAppDeployStatusReply, error)
 	mustEmbedUnimplementedAppServiceServer()
 }
 
@@ -142,6 +217,21 @@ func (UnimplementedAppServiceServer) GetApp(context.Context, *GetAppRequest) (*G
 }
 func (UnimplementedAppServiceServer) ListApp(context.Context, *ListAppRequest) (*ListAppReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListApp not implemented")
+}
+func (UnimplementedAppServiceServer) PublishApp(context.Context, *PublishAppRequest) (*PublishAppReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method PublishApp not implemented")
+}
+func (UnimplementedAppServiceServer) StopApp(context.Context, *StopAppRequest) (*StopAppReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method StopApp not implemented")
+}
+func (UnimplementedAppServiceServer) ScaleApp(context.Context, *ScaleAppRequest) (*ScaleAppReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method ScaleApp not implemented")
+}
+func (UnimplementedAppServiceServer) RollbackApp(context.Context, *RollbackAppRequest) (*RollbackAppReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method RollbackApp not implemented")
+}
+func (UnimplementedAppServiceServer) GetAppDeployStatus(context.Context, *GetAppDeployStatusRequest) (*GetAppDeployStatusReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAppDeployStatus not implemented")
 }
 func (UnimplementedAppServiceServer) mustEmbedUnimplementedAppServiceServer() {}
 func (UnimplementedAppServiceServer) testEmbeddedByValue()                    {}
@@ -254,6 +344,96 @@ func _AppService_ListApp_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AppService_PublishApp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishAppRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).PublishApp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppService_PublishApp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).PublishApp(ctx, req.(*PublishAppRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_StopApp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopAppRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).StopApp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppService_StopApp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).StopApp(ctx, req.(*StopAppRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_ScaleApp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScaleAppRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).ScaleApp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppService_ScaleApp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).ScaleApp(ctx, req.(*ScaleAppRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_RollbackApp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RollbackAppRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).RollbackApp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppService_RollbackApp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).RollbackApp(ctx, req.(*RollbackAppRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_GetAppDeployStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAppDeployStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).GetAppDeployStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppService_GetAppDeployStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).GetAppDeployStatus(ctx, req.(*GetAppDeployStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AppService_ServiceDesc is the grpc.ServiceDesc for AppService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -280,6 +460,26 @@ var AppService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListApp",
 			Handler:    _AppService_ListApp_Handler,
+		},
+		{
+			MethodName: "PublishApp",
+			Handler:    _AppService_PublishApp_Handler,
+		},
+		{
+			MethodName: "StopApp",
+			Handler:    _AppService_StopApp_Handler,
+		},
+		{
+			MethodName: "ScaleApp",
+			Handler:    _AppService_ScaleApp_Handler,
+		},
+		{
+			MethodName: "RollbackApp",
+			Handler:    _AppService_RollbackApp_Handler,
+		},
+		{
+			MethodName: "GetAppDeployStatus",
+			Handler:    _AppService_GetAppDeployStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

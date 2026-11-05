@@ -40,15 +40,46 @@ type AppRepo interface {
 	ListByCondition(ctx context.Context, cond *ListAppCondition) ([]*App, int64, error)
 }
 
-// AppUsecase 应用业务逻辑
-type AppUsecase struct {
-	repo AppRepo
-	log  *log.Helper
+// AppDeployStatus 部署实时状态（镜像以 K8s 为准——回滚后 DB 可能滞后）
+type AppDeployStatus struct {
+	Namespace  string
+	Desired    int32
+	Updated    int32
+	Ready      int32
+	Available  int32
+	Image      string
+	NodePort   int32
+	Conditions []DeployCondition
 }
 
-// NewAppUsecase 注入仓储与日志
-func NewAppUsecase(repo AppRepo, logger log.Logger) *AppUsecase {
-	return &AppUsecase{repo: repo, log: log.NewHelper(log.With(logger, "module", "usecase/app"))}
+// DeployCondition 部署就绪条件
+type DeployCondition struct {
+	Type    string
+	Status  string
+	Reason  string
+	Message string
+}
+
+// AppDeployer 应用部署器接口：把应用发布/停止/扩缩/回滚到 K8s
+// （实现见 internal/data/k8s.go）
+type AppDeployer interface {
+	Deploy(ctx context.Context, a *App) error    // 幂等发布：ensure 命名空间/Deployment/Service + 等待就绪
+	TearDown(ctx context.Context, a *App) error  // 删除 K8s 资源（stop 与 delete 共用）
+	Scale(ctx context.Context, a *App, replicas int32) error
+	Rollback(ctx context.Context, a *App) error
+	Status(ctx context.Context, a *App) (*AppDeployStatus, error) // 实时读 K8s
+}
+
+// AppUsecase 应用业务逻辑
+type AppUsecase struct {
+	repo     AppRepo
+	deployer AppDeployer
+	log      *log.Helper
+}
+
+// NewAppUsecase 注入仓储、部署器与日志
+func NewAppUsecase(repo AppRepo, deployer AppDeployer, logger log.Logger) *AppUsecase {
+	return &AppUsecase{repo: repo, deployer: deployer, log: log.NewHelper(log.With(logger, "module", "usecase/app"))}
 }
 
 var validAppEnvs = map[string]bool{"dev": true, "staging": true, "prod": true}
@@ -121,10 +152,16 @@ func (uc *AppUsecase) UpdateApp(ctx context.Context, a *App) (*App, error) {
 	return uc.repo.Update(ctx, a)
 }
 
-// DeleteApp 删除应用
+// DeleteApp 删除应用；已部署的先清理 K8s 资源，避免孤儿 Deployment
 func (uc *AppUsecase) DeleteApp(ctx context.Context, id int64) error {
-	if _, err := uc.repo.FindByID(ctx, id); err != nil {
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
 		return err
+	}
+	if a.Status == "deployed" {
+		if err := uc.deployer.TearDown(ctx, a); err != nil {
+			return err // 清理失败则中止删除，K8s 资源还在可重试
+		}
 	}
 	return uc.repo.Delete(ctx, id)
 }
@@ -143,4 +180,88 @@ func (uc *AppUsecase) ListApp(ctx context.Context, page, pageSize int64, env, ke
 	return uc.repo.ListByCondition(ctx, &ListAppCondition{
 		Offset: offset, Limit: limit, Env: env, Keyword: keyword,
 	})
+}
+
+// PublishApp 发布应用（幂等）：发布成功后状态置为 deployed。
+// 等待就绪超时时资源已保留，状态不回写，可重发或查部署状态
+func (uc *AppUsecase) PublishApp(ctx context.Context, id int64) (*App, error) {
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if a.Image == "" || a.ContainerPort <= 0 {
+		return nil, withMsg(ErrAppInvalid, "发布前请先配置镜像和容器端口")
+	}
+	if err := uc.deployer.Deploy(ctx, a); err != nil {
+		return nil, err
+	}
+	a.Status = "deployed"
+	return uc.repo.Update(ctx, a)
+}
+
+// StopApp 停止应用：删除 K8s 资源，状态置为 stopped（幂等）
+func (uc *AppUsecase) StopApp(ctx context.Context, id int64) (*App, error) {
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if a.Status == "stopped" {
+		return a, nil
+	}
+	if a.Status != "deployed" {
+		return nil, withMsg(ErrAppNotDeployed, "应用尚未发布，无需停止")
+	}
+	if err := uc.deployer.TearDown(ctx, a); err != nil {
+		return nil, err
+	}
+	a.Status = "stopped"
+	return uc.repo.Update(ctx, a)
+}
+
+// ScaleApp 扩缩容，成功后回写副本数
+func (uc *AppUsecase) ScaleApp(ctx context.Context, id int64, replicas int32) (*App, error) {
+	if replicas < 0 || replicas > 100 {
+		return nil, withMsg(ErrAppInvalid, "replicas 取值范围 0-100")
+	}
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if a.Status != "deployed" {
+		return nil, withMsg(ErrAppNotDeployed, "应用尚未发布，无法扩缩容")
+	}
+	if err := uc.deployer.Scale(ctx, a, replicas); err != nil {
+		return nil, err
+	}
+	a.Replicas = replicas
+	return uc.repo.Update(ctx, a)
+}
+
+// RollbackApp 回滚到上一个发布版本。
+// 不回写 DB 的镜像字段：部署状态接口以集群实况为准
+func (uc *AppUsecase) RollbackApp(ctx context.Context, id int64) (*App, error) {
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if a.Status != "deployed" {
+		return nil, withMsg(ErrAppNotDeployed, "应用尚未发布，无法回滚")
+	}
+	if err := uc.deployer.Rollback(ctx, a); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+// GetDeployStatus 查询部署实时状态（直读 K8s）
+func (uc *AppUsecase) GetDeployStatus(ctx context.Context, id int64) (*App, *AppDeployStatus, error) {
+	a, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	st, err := uc.deployer.Status(ctx, a)
+	if err != nil {
+		return nil, nil, err
+	}
+	return a, st, nil
 }

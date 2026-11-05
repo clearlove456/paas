@@ -2,10 +2,10 @@
 server:
   http:
     addr: 0.0.0.0:8000
-    timeout: 1s
+    timeout: 300s # 发布接口同步等待就绪（最长 3min），不能太短
   grpc:
     addr: 0.0.0.0:9000
-    timeout: 1s
+    timeout: 300s
 data:
   database:
     driver: mysql
@@ -15,8 +15,17 @@ data:
     password: your-redis-password
     read_timeout: 0.2s
     write_timeout: 0.2s
+  # consumers 的 key 是消费者全局标识，必须与 internal/data/consumer 注册表一致
   rocketmq:
     enabled: false
     name_srv_addrs: ["127.0.0.1:9876"]
-    topic: paas-canal
-    group: paas-cache-evictor
+    consumers:
+      cache-evict-binlog:
+        group: paas-cache-evictor
+        topic: paas-canal
+      cache-evict-delay:
+        group: paas-cache-evict-delay
+        topic: paas-cache-evict
+kubernetes:
+  enabled: false
+  kubeconfig: /home/user/.kube/config # 空 = in-cluster（部署进集群时用）

@@ -26,6 +26,7 @@ type Bootstrap struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Server        *Server                `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
 	Data          *Data                  `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Kubernetes    *Kubernetes            `protobuf:"bytes,3,opt,name=kubernetes,proto3" json:"kubernetes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -70,6 +71,13 @@ func (x *Bootstrap) GetServer() *Server {
 func (x *Bootstrap) GetData() *Data {
 	if x != nil {
 		return x.Data
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetKubernetes() *Kubernetes {
+	if x != nil {
+		return x.Kubernetes
 	}
 	return nil
 }
@@ -126,6 +134,60 @@ func (x *Server) GetGrpc() *Server_GRPC {
 	return nil
 }
 
+// K8s 集群接入（应用发布）。namespace 规则/等待超时/label 等已写死在代码，
+// 只有环境相关项进配置
+type Kubernetes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`      // 无集群时 false：服务正常启动，发布接口报错
+	Kubeconfig    string                 `protobuf:"bytes,2,opt,name=kubeconfig,proto3" json:"kubeconfig,omitempty"` // kubeconfig 绝对路径；为空则 in-cluster（Phase 2 部署进集群用）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Kubernetes) Reset() {
+	*x = Kubernetes{}
+	mi := &file_conf_conf_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Kubernetes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Kubernetes) ProtoMessage() {}
+
+func (x *Kubernetes) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Kubernetes.ProtoReflect.Descriptor instead.
+func (*Kubernetes) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Kubernetes) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *Kubernetes) GetKubeconfig() string {
+	if x != nil {
+		return x.Kubeconfig
+	}
+	return ""
+}
+
 type Data struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Database      *Data_Database         `protobuf:"bytes,1,opt,name=database,proto3" json:"database,omitempty"`
@@ -137,7 +199,7 @@ type Data struct {
 
 func (x *Data) Reset() {
 	*x = Data{}
-	mi := &file_conf_conf_proto_msgTypes[2]
+	mi := &file_conf_conf_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -149,7 +211,7 @@ func (x *Data) String() string {
 func (*Data) ProtoMessage() {}
 
 func (x *Data) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[2]
+	mi := &file_conf_conf_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -162,7 +224,7 @@ func (x *Data) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data.ProtoReflect.Descriptor instead.
 func (*Data) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2}
+	return file_conf_conf_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Data) GetDatabase() *Data_Database {
@@ -187,17 +249,18 @@ func (x *Data) GetRocketmq() *Data_Rocketmq {
 }
 
 type Server_HTTP struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr          string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Timeout       *durationpb.Duration   `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Network string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	Addr    string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	// 注意：发布接口同步等待应用就绪（最长 3min），超时需大于它
+	Timeout       *durationpb.Duration `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Server_HTTP) Reset() {
 	*x = Server_HTTP{}
-	mi := &file_conf_conf_proto_msgTypes[3]
+	mi := &file_conf_conf_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -209,7 +272,7 @@ func (x *Server_HTTP) String() string {
 func (*Server_HTTP) ProtoMessage() {}
 
 func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[3]
+	mi := &file_conf_conf_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -257,7 +320,7 @@ type Server_GRPC struct {
 
 func (x *Server_GRPC) Reset() {
 	*x = Server_GRPC{}
-	mi := &file_conf_conf_proto_msgTypes[4]
+	mi := &file_conf_conf_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -269,7 +332,7 @@ func (x *Server_GRPC) String() string {
 func (*Server_GRPC) ProtoMessage() {}
 
 func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[4]
+	mi := &file_conf_conf_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -316,7 +379,7 @@ type Data_Database struct {
 
 func (x *Data_Database) Reset() {
 	*x = Data_Database{}
-	mi := &file_conf_conf_proto_msgTypes[5]
+	mi := &file_conf_conf_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -328,7 +391,7 @@ func (x *Data_Database) String() string {
 func (*Data_Database) ProtoMessage() {}
 
 func (x *Data_Database) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[5]
+	mi := &file_conf_conf_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -341,7 +404,7 @@ func (x *Data_Database) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Database.ProtoReflect.Descriptor instead.
 func (*Data_Database) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 0}
+	return file_conf_conf_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *Data_Database) GetDriver() string {
@@ -371,7 +434,7 @@ type Data_Redis struct {
 
 func (x *Data_Redis) Reset() {
 	*x = Data_Redis{}
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -383,7 +446,7 @@ func (x *Data_Redis) String() string {
 func (*Data_Redis) ProtoMessage() {}
 
 func (x *Data_Redis) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -396,7 +459,7 @@ func (x *Data_Redis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Redis.ProtoReflect.Descriptor instead.
 func (*Data_Redis) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 1}
+	return file_conf_conf_proto_rawDescGZIP(), []int{3, 1}
 }
 
 func (x *Data_Redis) GetNetwork() string {
@@ -434,20 +497,20 @@ func (x *Data_Redis) GetPassword() string {
 	return ""
 }
 
-// canal binlog 订阅（缓存一致性兜底通道，经 RocketMQ 投递）
+// MQ 消费者配置（canal binlog 订阅等，经 RocketMQ 投递）
 type Data_Rocketmq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`                                // 未部署 RocketMQ 前设为 false
-	NameSrvAddrs  []string               `protobuf:"bytes,2,rep,name=name_srv_addrs,json=nameSrvAddrs,proto3" json:"name_srv_addrs,omitempty"` // NameServer 地址
-	Topic         string                 `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`                                     // canal 投递 binlog 的主题
-	Group         string                 `protobuf:"bytes,4,opt,name=group,proto3" json:"group,omitempty"`                                     // 消费组
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Enabled      bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`                                // 未部署 RocketMQ 前设为 false
+	NameSrvAddrs []string               `protobuf:"bytes,2,rep,name=name_srv_addrs,json=nameSrvAddrs,proto3" json:"name_srv_addrs,omitempty"` // NameServer 地址
+	// 全部消费者的订阅配置，key 为消费者全局标识 name（与代码注册表一致）
+	Consumers     map[string]*Data_RocketmqConsumer `protobuf:"bytes,3,rep,name=consumers,proto3" json:"consumers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Data_Rocketmq) Reset() {
 	*x = Data_Rocketmq{}
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -459,7 +522,7 @@ func (x *Data_Rocketmq) String() string {
 func (*Data_Rocketmq) ProtoMessage() {}
 
 func (x *Data_Rocketmq) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -472,7 +535,7 @@ func (x *Data_Rocketmq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Rocketmq.ProtoReflect.Descriptor instead.
 func (*Data_Rocketmq) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{2, 2}
+	return file_conf_conf_proto_rawDescGZIP(), []int{3, 2}
 }
 
 func (x *Data_Rocketmq) GetEnabled() bool {
@@ -489,16 +552,61 @@ func (x *Data_Rocketmq) GetNameSrvAddrs() []string {
 	return nil
 }
 
-func (x *Data_Rocketmq) GetTopic() string {
+func (x *Data_Rocketmq) GetConsumers() map[string]*Data_RocketmqConsumer {
 	if x != nil {
-		return x.Topic
+		return x.Consumers
+	}
+	return nil
+}
+
+type Data_RocketmqConsumer struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Group         string                 `protobuf:"bytes,1,opt,name=group,proto3" json:"group,omitempty"` // 消费组
+	Topic         string                 `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"` // 订阅主题
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Data_RocketmqConsumer) Reset() {
+	*x = Data_RocketmqConsumer{}
+	mi := &file_conf_conf_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data_RocketmqConsumer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data_RocketmqConsumer) ProtoMessage() {}
+
+func (x *Data_RocketmqConsumer) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data_RocketmqConsumer.ProtoReflect.Descriptor instead.
+func (*Data_RocketmqConsumer) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{3, 3}
+}
+
+func (x *Data_RocketmqConsumer) GetGroup() string {
+	if x != nil {
+		return x.Group
 	}
 	return ""
 }
 
-func (x *Data_Rocketmq) GetGroup() string {
+func (x *Data_RocketmqConsumer) GetTopic() string {
 	if x != nil {
-		return x.Group
+		return x.Topic
 	}
 	return ""
 }
@@ -508,10 +616,13 @@ var File_conf_conf_proto protoreflect.FileDescriptor
 const file_conf_conf_proto_rawDesc = "" +
 	"\n" +
 	"\x0fconf/conf.proto\x12\n" +
-	"kratos.api\x1a\x1egoogle/protobuf/duration.proto\"]\n" +
+	"kratos.api\x1a\x1egoogle/protobuf/duration.proto\"\x95\x01\n" +
 	"\tBootstrap\x12*\n" +
 	"\x06server\x18\x01 \x01(\v2\x12.kratos.api.ServerR\x06server\x12$\n" +
-	"\x04data\x18\x02 \x01(\v2\x10.kratos.api.DataR\x04data\"\xb8\x02\n" +
+	"\x04data\x18\x02 \x01(\v2\x10.kratos.api.DataR\x04data\x126\n" +
+	"\n" +
+	"kubernetes\x18\x03 \x01(\v2\x16.kratos.api.KubernetesR\n" +
+	"kubernetes\"\xb8\x02\n" +
 	"\x06Server\x12+\n" +
 	"\x04http\x18\x01 \x01(\v2\x17.kratos.api.Server.HTTPR\x04http\x12+\n" +
 	"\x04grpc\x18\x02 \x01(\v2\x17.kratos.api.Server.GRPCR\x04grpc\x1ai\n" +
@@ -522,7 +633,13 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xa8\x04\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"F\n" +
+	"\n" +
+	"Kubernetes\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1e\n" +
+	"\n" +
+	"kubeconfig\x18\x02 \x01(\tR\n" +
+	"kubeconfig\"\xe6\x05\n" +
 	"\x04Data\x125\n" +
 	"\bdatabase\x18\x01 \x01(\v2\x19.kratos.api.Data.DatabaseR\bdatabase\x12,\n" +
 	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x125\n" +
@@ -535,12 +652,17 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12<\n" +
 	"\fread_timeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\vreadTimeout\x12>\n" +
 	"\rwrite_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeout\x12\x1a\n" +
-	"\bpassword\x18\x05 \x01(\tR\bpassword\x1av\n" +
+	"\bpassword\x18\x05 \x01(\tR\bpassword\x1a\xf3\x01\n" +
 	"\bRocketmq\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12$\n" +
-	"\x0ename_srv_addrs\x18\x02 \x03(\tR\fnameSrvAddrs\x12\x14\n" +
-	"\x05topic\x18\x03 \x01(\tR\x05topic\x12\x14\n" +
-	"\x05group\x18\x04 \x01(\tR\x05groupB1Z/github.com/clearlove456/paas/internal/conf;confb\x06proto3"
+	"\x0ename_srv_addrs\x18\x02 \x03(\tR\fnameSrvAddrs\x12F\n" +
+	"\tconsumers\x18\x03 \x03(\v2(.kratos.api.Data.Rocketmq.ConsumersEntryR\tconsumers\x1a_\n" +
+	"\x0eConsumersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x127\n" +
+	"\x05value\x18\x02 \x01(\v2!.kratos.api.Data.RocketmqConsumerR\x05value:\x028\x01\x1a>\n" +
+	"\x10RocketmqConsumer\x12\x14\n" +
+	"\x05group\x18\x01 \x01(\tR\x05group\x12\x14\n" +
+	"\x05topic\x18\x02 \x01(\tR\x05topicB1Z/github.com/clearlove456/paas/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_conf_proto_rawDescOnce sync.Once
@@ -554,35 +676,41 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_conf_conf_proto_goTypes = []any{
-	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
-	(*Server)(nil),              // 1: kratos.api.Server
-	(*Data)(nil),                // 2: kratos.api.Data
-	(*Server_HTTP)(nil),         // 3: kratos.api.Server.HTTP
-	(*Server_GRPC)(nil),         // 4: kratos.api.Server.GRPC
-	(*Data_Database)(nil),       // 5: kratos.api.Data.Database
-	(*Data_Redis)(nil),          // 6: kratos.api.Data.Redis
-	(*Data_Rocketmq)(nil),       // 7: kratos.api.Data.Rocketmq
-	(*durationpb.Duration)(nil), // 8: google.protobuf.Duration
+	(*Bootstrap)(nil),             // 0: kratos.api.Bootstrap
+	(*Server)(nil),                // 1: kratos.api.Server
+	(*Kubernetes)(nil),            // 2: kratos.api.Kubernetes
+	(*Data)(nil),                  // 3: kratos.api.Data
+	(*Server_HTTP)(nil),           // 4: kratos.api.Server.HTTP
+	(*Server_GRPC)(nil),           // 5: kratos.api.Server.GRPC
+	(*Data_Database)(nil),         // 6: kratos.api.Data.Database
+	(*Data_Redis)(nil),            // 7: kratos.api.Data.Redis
+	(*Data_Rocketmq)(nil),         // 8: kratos.api.Data.Rocketmq
+	(*Data_RocketmqConsumer)(nil), // 9: kratos.api.Data.RocketmqConsumer
+	nil,                           // 10: kratos.api.Data.Rocketmq.ConsumersEntry
+	(*durationpb.Duration)(nil),   // 11: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
-	2,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
-	3,  // 2: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
-	4,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
-	5,  // 4: kratos.api.Data.database:type_name -> kratos.api.Data.Database
-	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	7,  // 6: kratos.api.Data.rocketmq:type_name -> kratos.api.Data.Rocketmq
-	8,  // 7: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	8,  // 8: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	8,  // 9: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	8,  // 10: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	3,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
+	2,  // 2: kratos.api.Bootstrap.kubernetes:type_name -> kratos.api.Kubernetes
+	4,  // 3: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
+	5,  // 4: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
+	6,  // 5: kratos.api.Data.database:type_name -> kratos.api.Data.Database
+	7,  // 6: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
+	8,  // 7: kratos.api.Data.rocketmq:type_name -> kratos.api.Data.Rocketmq
+	11, // 8: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	11, // 9: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	11, // 10: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	11, // 11: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	10, // 12: kratos.api.Data.Rocketmq.consumers:type_name -> kratos.api.Data.Rocketmq.ConsumersEntry
+	9,  // 13: kratos.api.Data.Rocketmq.ConsumersEntry.value:type_name -> kratos.api.Data.RocketmqConsumer
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -596,7 +724,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

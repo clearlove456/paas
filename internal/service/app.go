@@ -110,3 +110,69 @@ func (s *AppService) ListApp(ctx context.Context, req *v1.ListAppRequest) (*v1.L
 	}
 	return reply, nil
 }
+
+// PublishApp 发布应用
+func (s *AppService) PublishApp(ctx context.Context, req *v1.PublishAppRequest) (*v1.PublishAppReply, error) {
+	s.log.Infof("PublishApp: id=%d", req.GetId())
+	out, err := s.uc.PublishApp(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return &v1.PublishAppReply{App: appPB(out)}, nil
+}
+
+// StopApp 停止应用
+func (s *AppService) StopApp(ctx context.Context, req *v1.StopAppRequest) (*v1.StopAppReply, error) {
+	s.log.Infof("StopApp: id=%d", req.GetId())
+	out, err := s.uc.StopApp(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return &v1.StopAppReply{App: appPB(out)}, nil
+}
+
+// ScaleApp 扩缩容
+func (s *AppService) ScaleApp(ctx context.Context, req *v1.ScaleAppRequest) (*v1.ScaleAppReply, error) {
+	s.log.Infof("ScaleApp: id=%d replicas=%d", req.GetId(), req.GetReplicas())
+	out, err := s.uc.ScaleApp(ctx, req.GetId(), req.GetReplicas())
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ScaleAppReply{App: appPB(out)}, nil
+}
+
+// RollbackApp 回滚上一个版本
+func (s *AppService) RollbackApp(ctx context.Context, req *v1.RollbackAppRequest) (*v1.RollbackAppReply, error) {
+	s.log.Infof("RollbackApp: id=%d", req.GetId())
+	out, err := s.uc.RollbackApp(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return &v1.RollbackAppReply{App: appPB(out)}, nil
+}
+
+// GetAppDeployStatus 查询部署实时状态
+func (s *AppService) GetAppDeployStatus(ctx context.Context, req *v1.GetAppDeployStatusRequest) (*v1.GetAppDeployStatusReply, error) {
+	a, st, err := s.uc.GetDeployStatus(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.GetAppDeployStatusReply{
+		AppId:            a.ID,
+		Env:              a.Env,
+		Namespace:        st.Namespace,
+		DesiredReplicas:  st.Desired,
+		UpdatedReplicas:  st.Updated,
+		ReadyReplicas:    st.Ready,
+		AvailableReplicas: st.Available,
+		Image:            st.Image,
+		NodePort:         st.NodePort,
+		Conditions:       make([]*v1.DeployCondition, 0, len(st.Conditions)),
+	}
+	for _, c := range st.Conditions {
+		reply.Conditions = append(reply.Conditions, &v1.DeployCondition{
+			Type: c.Type, Status: c.Status, Reason: c.Reason, Message: c.Message,
+		})
+	}
+	return reply, nil
+}

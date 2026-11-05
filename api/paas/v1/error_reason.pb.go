@@ -33,6 +33,10 @@ const (
 	ErrorReason_APP_NOT_FOUND       ErrorReason = 3
 	ErrorReason_APP_NAME_CONFLICT   ErrorReason = 4
 	ErrorReason_APP_INVALID         ErrorReason = 5
+	ErrorReason_APP_NOT_DEPLOYED    ErrorReason = 6 // 未发布就 stop/scale/rollback，或 K8s 资源不存在
+	ErrorReason_APP_DEPLOY_TIMEOUT  ErrorReason = 7 // 发布/扩缩等待就绪超时（K8s 资源已保留）
+	ErrorReason_APP_ROLLBACK_FAILED ErrorReason = 8 // 没有可回滚的历史版本
+	ErrorReason_APP_DEPLOY_FAILED   ErrorReason = 9 // 其他 K8s 操作失败
 )
 
 // Enum value maps for ErrorReason.
@@ -44,6 +48,10 @@ var (
 		3: "APP_NOT_FOUND",
 		4: "APP_NAME_CONFLICT",
 		5: "APP_INVALID",
+		6: "APP_NOT_DEPLOYED",
+		7: "APP_DEPLOY_TIMEOUT",
+		8: "APP_ROLLBACK_FAILED",
+		9: "APP_DEPLOY_FAILED",
 	}
 	ErrorReason_value = map[string]int32{
 		"ASSET_NOT_FOUND":     0,
@@ -52,6 +60,10 @@ var (
 		"APP_NOT_FOUND":       3,
 		"APP_NAME_CONFLICT":   4,
 		"APP_INVALID":         5,
+		"APP_NOT_DEPLOYED":    6,
+		"APP_DEPLOY_TIMEOUT":  7,
+		"APP_ROLLBACK_FAILED": 8,
+		"APP_DEPLOY_FAILED":   9,
 	}
 )
 
@@ -86,14 +98,18 @@ var File_paas_v1_error_reason_proto protoreflect.FileDescriptor
 
 const file_paas_v1_error_reason_proto_rawDesc = "" +
 	"\n" +
-	"\x1apaas/v1/error_reason.proto\x12\apaas.v1\x1a\x13errors/errors.proto*\xad\x01\n" +
+	"\x1apaas/v1/error_reason.proto\x12\apaas.v1\x1a\x13errors/errors.proto*\xa3\x02\n" +
 	"\vErrorReason\x12\x19\n" +
 	"\x0fASSET_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12\x1d\n" +
 	"\x13ASSET_HOST_CONFLICT\x10\x01\x1a\x04\xa8E\x99\x03\x12\x17\n" +
 	"\rASSET_INVALID\x10\x02\x1a\x04\xa8E\x90\x03\x12\x17\n" +
 	"\rAPP_NOT_FOUND\x10\x03\x1a\x04\xa8E\x94\x03\x12\x1b\n" +
 	"\x11APP_NAME_CONFLICT\x10\x04\x1a\x04\xa8E\x99\x03\x12\x15\n" +
-	"\vAPP_INVALID\x10\x05\x1a\x04\xa8E\x90\x03BY\n" +
+	"\vAPP_INVALID\x10\x05\x1a\x04\xa8E\x90\x03\x12\x1a\n" +
+	"\x10APP_NOT_DEPLOYED\x10\x06\x1a\x04\xa8E\x99\x03\x12\x1c\n" +
+	"\x12APP_DEPLOY_TIMEOUT\x10\a\x1a\x04\xa8E\xf8\x03\x12\x1d\n" +
+	"\x13APP_ROLLBACK_FAILED\x10\b\x1a\x04\xa8E\x99\x03\x12\x1b\n" +
+	"\x11APP_DEPLOY_FAILED\x10\t\x1a\x04\xa8E\xf4\x03BY\n" +
 	"\x14dev.paas.api.paas.v1B\x12ErrorReasonProtoV1P\x01Z+github.com/clearlove456/paas/api/paas/v1;v1b\x06proto3"
 
 var (

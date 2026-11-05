@@ -22,7 +22,12 @@ const _ = http.SupportPackageIsVersion1
 const OperationAppServiceCreateApp = "/paas.v1.AppService/CreateApp"
 const OperationAppServiceDeleteApp = "/paas.v1.AppService/DeleteApp"
 const OperationAppServiceGetApp = "/paas.v1.AppService/GetApp"
+const OperationAppServiceGetAppDeployStatus = "/paas.v1.AppService/GetAppDeployStatus"
 const OperationAppServiceListApp = "/paas.v1.AppService/ListApp"
+const OperationAppServicePublishApp = "/paas.v1.AppService/PublishApp"
+const OperationAppServiceRollbackApp = "/paas.v1.AppService/RollbackApp"
+const OperationAppServiceScaleApp = "/paas.v1.AppService/ScaleApp"
+const OperationAppServiceStopApp = "/paas.v1.AppService/StopApp"
 const OperationAppServiceUpdateApp = "/paas.v1.AppService/UpdateApp"
 
 type AppServiceHTTPServer interface {
@@ -32,8 +37,18 @@ type AppServiceHTTPServer interface {
 	DeleteApp(context.Context, *DeleteAppRequest) (*DeleteAppReply, error)
 	// GetApp 查询应用详情
 	GetApp(context.Context, *GetAppRequest) (*GetAppReply, error)
+	// GetAppDeployStatus 查询部署实时状态（直读 K8s，不查缓存）
+	GetAppDeployStatus(context.Context, *GetAppDeployStatusRequest) (*GetAppDeployStatusReply, error)
 	// ListApp 分页查询应用列表
 	ListApp(context.Context, *ListAppRequest) (*ListAppReply, error)
+	// PublishApp 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+	PublishApp(context.Context, *PublishAppRequest) (*PublishAppReply, error)
+	// RollbackApp 回滚到上一个发布版本
+	RollbackApp(context.Context, *RollbackAppRequest) (*RollbackAppReply, error)
+	// ScaleApp 扩缩容（同步等待就绪）
+	ScaleApp(context.Context, *ScaleAppRequest) (*ScaleAppReply, error)
+	// StopApp 停止应用（删除 K8s 资源，保留应用记录）
+	StopApp(context.Context, *StopAppRequest) (*StopAppReply, error)
 	// UpdateApp 更新应用（全量更新）
 	UpdateApp(context.Context, *UpdateAppRequest) (*UpdateAppReply, error)
 }
@@ -45,6 +60,11 @@ func RegisterAppServiceHTTPServer(s *http.Server, srv AppServiceHTTPServer) {
 	r.DELETE("/api/v1/apps/{id}", _AppService_DeleteApp0_HTTP_Handler(srv))
 	r.GET("/api/v1/apps/{id}", _AppService_GetApp0_HTTP_Handler(srv))
 	r.GET("/api/v1/apps", _AppService_ListApp0_HTTP_Handler(srv))
+	r.POST("/api/v1/apps/{id}/publish", _AppService_PublishApp0_HTTP_Handler(srv))
+	r.POST("/api/v1/apps/{id}/stop", _AppService_StopApp0_HTTP_Handler(srv))
+	r.PUT("/api/v1/apps/{id}/scale", _AppService_ScaleApp0_HTTP_Handler(srv))
+	r.POST("/api/v1/apps/{id}/rollback", _AppService_RollbackApp0_HTTP_Handler(srv))
+	r.GET("/api/v1/apps/{id}/deploy-status", _AppService_GetAppDeployStatus0_HTTP_Handler(srv))
 }
 
 func _AppService_CreateApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
@@ -157,6 +177,119 @@ func _AppService_ListApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.C
 	}
 }
 
+func _AppService_PublishApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in PublishAppRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppServicePublishApp)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.PublishApp(ctx, req.(*PublishAppRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*PublishAppReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AppService_StopApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in StopAppRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppServiceStopApp)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.StopApp(ctx, req.(*StopAppRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*StopAppReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AppService_ScaleApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ScaleAppRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppServiceScaleApp)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ScaleApp(ctx, req.(*ScaleAppRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ScaleAppReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AppService_RollbackApp0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in RollbackAppRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppServiceRollbackApp)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.RollbackApp(ctx, req.(*RollbackAppRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*RollbackAppReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AppService_GetAppDeployStatus0_HTTP_Handler(srv AppServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetAppDeployStatusRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppServiceGetAppDeployStatus)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetAppDeployStatus(ctx, req.(*GetAppDeployStatusRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetAppDeployStatusReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AppServiceHTTPClient interface {
 	// CreateApp 创建应用
 	CreateApp(ctx context.Context, req *CreateAppRequest, opts ...http.CallOption) (rsp *CreateAppReply, err error)
@@ -164,8 +297,18 @@ type AppServiceHTTPClient interface {
 	DeleteApp(ctx context.Context, req *DeleteAppRequest, opts ...http.CallOption) (rsp *DeleteAppReply, err error)
 	// GetApp 查询应用详情
 	GetApp(ctx context.Context, req *GetAppRequest, opts ...http.CallOption) (rsp *GetAppReply, err error)
+	// GetAppDeployStatus 查询部署实时状态（直读 K8s，不查缓存）
+	GetAppDeployStatus(ctx context.Context, req *GetAppDeployStatusRequest, opts ...http.CallOption) (rsp *GetAppDeployStatusReply, err error)
 	// ListApp 分页查询应用列表
 	ListApp(ctx context.Context, req *ListAppRequest, opts ...http.CallOption) (rsp *ListAppReply, err error)
+	// PublishApp 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+	PublishApp(ctx context.Context, req *PublishAppRequest, opts ...http.CallOption) (rsp *PublishAppReply, err error)
+	// RollbackApp 回滚到上一个发布版本
+	RollbackApp(ctx context.Context, req *RollbackAppRequest, opts ...http.CallOption) (rsp *RollbackAppReply, err error)
+	// ScaleApp 扩缩容（同步等待就绪）
+	ScaleApp(ctx context.Context, req *ScaleAppRequest, opts ...http.CallOption) (rsp *ScaleAppReply, err error)
+	// StopApp 停止应用（删除 K8s 资源，保留应用记录）
+	StopApp(ctx context.Context, req *StopAppRequest, opts ...http.CallOption) (rsp *StopAppReply, err error)
 	// UpdateApp 更新应用（全量更新）
 	UpdateApp(ctx context.Context, req *UpdateAppRequest, opts ...http.CallOption) (rsp *UpdateAppReply, err error)
 }
@@ -220,6 +363,20 @@ func (c *AppServiceHTTPClientImpl) GetApp(ctx context.Context, in *GetAppRequest
 	return &out, nil
 }
 
+// GetAppDeployStatus 查询部署实时状态（直读 K8s，不查缓存）
+func (c *AppServiceHTTPClientImpl) GetAppDeployStatus(ctx context.Context, in *GetAppDeployStatusRequest, opts ...http.CallOption) (*GetAppDeployStatusReply, error) {
+	var out GetAppDeployStatusReply
+	pattern := "/api/v1/apps/{id}/deploy-status"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAppServiceGetAppDeployStatus))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // ListApp 分页查询应用列表
 func (c *AppServiceHTTPClientImpl) ListApp(ctx context.Context, in *ListAppRequest, opts ...http.CallOption) (*ListAppReply, error) {
 	var out ListAppReply
@@ -228,6 +385,62 @@ func (c *AppServiceHTTPClientImpl) ListApp(ctx context.Context, in *ListAppReque
 	opts = append(opts, http.Operation(OperationAppServiceListApp))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// PublishApp 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+func (c *AppServiceHTTPClientImpl) PublishApp(ctx context.Context, in *PublishAppRequest, opts ...http.CallOption) (*PublishAppReply, error) {
+	var out PublishAppReply
+	pattern := "/api/v1/apps/{id}/publish"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAppServicePublishApp))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// RollbackApp 回滚到上一个发布版本
+func (c *AppServiceHTTPClientImpl) RollbackApp(ctx context.Context, in *RollbackAppRequest, opts ...http.CallOption) (*RollbackAppReply, error) {
+	var out RollbackAppReply
+	pattern := "/api/v1/apps/{id}/rollback"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAppServiceRollbackApp))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ScaleApp 扩缩容（同步等待就绪）
+func (c *AppServiceHTTPClientImpl) ScaleApp(ctx context.Context, in *ScaleAppRequest, opts ...http.CallOption) (*ScaleAppReply, error) {
+	var out ScaleAppReply
+	pattern := "/api/v1/apps/{id}/scale"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAppServiceScaleApp))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// StopApp 停止应用（删除 K8s 资源，保留应用记录）
+func (c *AppServiceHTTPClientImpl) StopApp(ctx context.Context, in *StopAppRequest, opts ...http.CallOption) (*StopAppReply, error) {
+	var out StopAppReply
+	pattern := "/api/v1/apps/{id}/stop"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAppServiceStopApp))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -26,11 +26,6 @@ import (
 const (
 	// evictDelayLevel 延迟双删档位（RocketMQ 级别 2 = 5s）
 	evictDelayLevel = rmqx.DelayLevel5s
-	// delayTopic 延迟双删主题
-	delayTopic = "paas-cache-evict"
-	// delayGroup 第二删的独立消费组：RocketMQ 要求同一消费组的订阅关系
-	// 在所有实例上完全一致，和 binlog 消费者分开组，避免订阅互相顶掉
-	delayGroup = "paas-cache-evict-delay"
 )
 
 // binlogKeyCfgs binlog 变更表 -> 缓存配置，新增带缓存的表在这里注册
@@ -46,13 +41,14 @@ type delayMsg struct {
 
 // cacheEvictor 缓存淘汰消费者
 type cacheEvictor struct {
-	rdb    *redis.Client
-	sender *rmqx.Sender
+	rdb        *redis.Client
+	sender     *rmqx.Sender
+	delayTopic string // 延迟双删主题（config.yaml consumers.cache-evict-delay.topic）
 }
 
 // newCacheEvictor 构建缓存淘汰消费者
-func newCacheEvictor(rdb *redis.Client, sender *rmqx.Sender) *cacheEvictor {
-	return &cacheEvictor{rdb: rdb, sender: sender}
+func newCacheEvictor(rdb *redis.Client, sender *rmqx.Sender, delayTopic string) *cacheEvictor {
+	return &cacheEvictor{rdb: rdb, sender: sender, delayTopic: delayTopic}
 }
 
 // handleBinlog 消费 paas-canal（canal 投递的 binlog 变更）：
@@ -64,13 +60,13 @@ func (e *cacheEvictor) handleBinlog(ctx context.Context, body []byte) error {
 			continue // 不关心的表（canal instance 侧也应配置白名单过滤）
 		}
 
-		// ① 第一删：本地直接 DEL，图快
+		// 1.第一删：本地直接 DEL，图快
 		key := cfg.Key(ev.ID)
 		cachex.Evict(ctx, e.rdb, key)
 
-		// ② 发一条延迟消息，5s 后由 handleDelay 执行第二删
+		// 2.发一条延迟消息，5s 后由 handleDelay 执行第二删
 		if payload, err := json.Marshal(delayMsg{Keys: []string{key}}); err == nil {
-			if err := e.sender.SendDelay(ctx, delayTopic, payload, evictDelayLevel); err != nil {
+			if err := e.sender.SendDelay(ctx, e.delayTopic, payload, evictDelayLevel); err != nil {
 				log.Warnf("binlog %s %s id=%d send delay msg failed: %v", ev.Type, ev.Table, ev.ID, err)
 			}
 		}
@@ -79,7 +75,7 @@ func (e *cacheEvictor) handleBinlog(ctx context.Context, body []byte) error {
 	return nil
 }
 
-// handleDelay 消费 paas-cache-evict（自己发的延迟消息到期）：
+// handleDelay 消费延迟双删主题（自己发的延迟消息到期）：
 // ③ 第二删
 func (e *cacheEvictor) handleDelay(ctx context.Context, body []byte) error {
 	var msg delayMsg

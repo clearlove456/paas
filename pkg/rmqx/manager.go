@@ -10,7 +10,7 @@ import (
 // 所以不同 topic 必须用不同的 Group——两个消费者若共用一个组却各订各的
 // topic，broker 端订阅表会互相顶掉，直接丢消息。
 type Consumer struct {
-	Name    string  // 展示名（日志用）
+	Name    string  // 全局标识：关联消费者注册表与配置，也用于日志展示
 	Group   string  // RocketMQ 消费组
 	Topic   string  // 订阅的主题
 	Handler Handler // 消息处理函数

@@ -116,6 +116,107 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/paas.v1.DeleteAppReply'
+    /api/v1/apps/{id}/deploy-status:
+        get:
+            tags:
+                - AppService
+            description: 查询部署实时状态（直读 K8s，不查缓存）
+            operationId: AppService_GetAppDeployStatus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.GetAppDeployStatusReply'
+    /api/v1/apps/{id}/publish:
+        post:
+            tags:
+                - AppService
+            description: 发布应用（幂等：已部署则更新镜像/副本/端口，未部署则创建；同步等待就绪）
+            operationId: AppService_PublishApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.PublishAppReply'
+    /api/v1/apps/{id}/rollback:
+        post:
+            tags:
+                - AppService
+            description: 回滚到上一个发布版本
+            operationId: AppService_RollbackApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.RollbackAppReply'
+    /api/v1/apps/{id}/scale:
+        put:
+            tags:
+                - AppService
+            description: 扩缩容（同步等待就绪）
+            operationId: AppService_ScaleApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/paas.v1.ScaleAppRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.ScaleAppReply'
+    /api/v1/apps/{id}/stop:
+        post:
+            tags:
+                - AppService
+            description: 停止应用（删除 K8s 资源，保留应用记录）
+            operationId: AppService_StopApp
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/paas.v1.StopAppReply'
     /api/v1/assets:
         get:
             tags:
@@ -316,6 +417,48 @@ components:
         paas.v1.DeleteAssetReply:
             type: object
             properties: {}
+        paas.v1.DeployCondition:
+            type: object
+            properties:
+                type:
+                    type: string
+                status:
+                    type: string
+                reason:
+                    type: string
+                message:
+                    type: string
+            description: 部署就绪条件（Progressing / Available）
+        paas.v1.GetAppDeployStatusReply:
+            type: object
+            properties:
+                appId:
+                    type: string
+                env:
+                    type: string
+                namespace:
+                    type: string
+                desiredReplicas:
+                    type: integer
+                    format: int32
+                updatedReplicas:
+                    type: integer
+                    format: int32
+                readyReplicas:
+                    type: integer
+                    format: int32
+                availableReplicas:
+                    type: integer
+                    format: int32
+                image:
+                    type: string
+                nodePort:
+                    type: integer
+                    format: int32
+                conditions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/paas.v1.DeployCondition'
         paas.v1.GetAppReply:
             type: object
             properties:
@@ -344,6 +487,34 @@ components:
                         $ref: '#/components/schemas/paas.v1.Asset'
                 total:
                     type: string
+        paas.v1.PublishAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.RollbackAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.ScaleAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
+        paas.v1.ScaleAppRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                replicas:
+                    type: integer
+                    format: int32
+        paas.v1.StopAppReply:
+            type: object
+            properties:
+                app:
+                    $ref: '#/components/schemas/paas.v1.App'
         paas.v1.UpdateAppReply:
             type: object
             properties:
